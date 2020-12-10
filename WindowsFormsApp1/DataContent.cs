@@ -777,13 +777,14 @@ namespace WindowsFormsApp1
         {
             public UInt64 id;
             public string path;
+            public string name;
         }
         public override List<MyTitle> getTitles2()
         {
             OleDbConnection cnn = m_cnn;
             //get paths
             var pathLst = new List<pathItem>();
-            var qry = "select * from paths order by ord ASC";
+            var qry = "select * from groups order by nOrd ASC";
             var cmd = new OleDbCommand(qry, cnn);
             var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -791,16 +792,20 @@ namespace WindowsFormsApp1
                 pathLst.Add(new pathItem()
                 {
                     id = Convert.ToUInt64(reader["ID"]),
-                    path = Convert.ToString(reader["path"])
+                    path = Convert.ToString(reader["zPath"]),
+                    name = Convert.ToString(reader["zName"])
                 });
             }
             reader.Close();
 
+            //resolve path
+            resolvePath(pathLst);
+
             //get title
             var titleLst = new List<MyTitle>();
-            var qry2 = "select * from titles WHERE pathId = @pathId order by ord ASC";
+            var qry2 = "select * from messages WHERE groupID = @groupID order by nOrd ASC";
             var cmd2 = new OleDbCommand(qry2, cnn);
-            cmd2.Parameters.Add("@pathId", OleDbType.Integer);
+            cmd2.Parameters.Add("@groupID", OleDbType.Integer);
             foreach (var pi in pathLst)
             {
                 cmd2.Parameters[0].Value = pi.id;
@@ -810,11 +815,12 @@ namespace WindowsFormsApp1
                 {
                     var title = new MyTitle();
                     title.ID = Convert.ToUInt64(reader2["ID"]);
-                    title.zTitle = Convert.ToString(reader2["title"])
+                    title.title = Convert.ToString(reader2["zTitle"])
                         .TrimEnd(new char[] { '\r', '\n', '\v' });
-                    title.pathId = Convert.ToUInt64(reader2["pathId"]);
-                    title.zPath = pi.path + "/" + title.zTitle;
-                    title.ord = Convert.ToInt32(reader2["ord"]);
+                    title.groupID = Convert.ToUInt64(reader2["groupID"]);
+                    title.path = pi.path + "/" + Convert.ToString(reader2["zPath"]);
+                    title.ord = Convert.ToInt32(reader2["nOrd"]);
+                    title.content = Convert.ToString(reader2["zContent"]);
                     titleLst.Add(title);
                     Debug.Assert(title.ord > ord);
                     ord = title.ord;
@@ -822,8 +828,57 @@ namespace WindowsFormsApp1
                 reader2.Close();
             }
 
+            //resolve path
+            resolveMsgPath(titleLst);
+
             return titleLst;
         }
+
+        private void resolveMsgPath(List<MyTitle> titleLst)
+        {
+            var tDict = new Dictionary<string, string>();
+            foreach (var title in titleLst)
+            {
+                tDict.Add(title.ID.ToString(), title.title);
+            }
+            foreach (var title in titleLst)
+            {
+                var arr = title.path.Split(new char[] { '/' },StringSplitOptions.RemoveEmptyEntries);
+                var newpath = "";
+                foreach (var tid in arr)
+                {
+                    if (tDict.ContainsKey(tid))
+                    {
+                        newpath += tDict[tid] + "/";
+                    }
+                    else
+                    {
+                        newpath += tid + "/";
+                    }
+                }
+                title.path = newpath + title.title;
+            }
+        }
+
+        private void resolvePath(List<pathItem> pathLst)
+        {
+            var tDict = new Dictionary<string, string>();
+            foreach (var tpath in pathLst)
+            {
+                tDict.Add(tpath.id.ToString(), tpath.name);
+            }
+            foreach (var tpath in pathLst)
+            {
+                var arr = tpath.path.Split(new char[] { '/' },StringSplitOptions.RemoveEmptyEntries);
+                var newpath = "";
+                foreach (var tid in arr)
+                {
+                    newpath += tDict[tid] + "/";
+                }
+                tpath.path = newpath + tpath.name;
+            }
+        }
+
         public override List<MyParagraph> getTitleParagraphs(UInt64 titleId)
         {
             var paragraphLst = new List<MyParagraph>();

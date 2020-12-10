@@ -188,10 +188,10 @@ namespace WindowsFormsApp1
                 ss.SelectVoice(vn.VoiceInfo.Name);
                 m_ss = ss;
             }
-            foreach (MyParagraph p in title.paragraphLst)
-            {
-                m_ss.SpeakAsync(p.content);
-            }
+            //foreach (MyParagraph p in title.paragraphLst)
+            //{
+            //    m_ss.SpeakAsync(p.content);
+            //}
         }
         private void SpeechStop()
         {
@@ -235,7 +235,7 @@ namespace WindowsFormsApp1
                 renderTree();
 
                 //restore state
-                restoreSts();
+                //restoreSts();
 
                 //set form title
                 UpdateFormName();
@@ -256,7 +256,7 @@ namespace WindowsFormsApp1
         {
             foreach (var title in m_titles)
             {
-                var path = title.zPath;
+                var path = title.path;
                 var n = path.IndexOf('/');
                 if (n == -1) break;
                 this.Text = path.Substring(0, n);
@@ -284,7 +284,7 @@ namespace WindowsFormsApp1
 
             foreach (var title in m_titles)
             {
-                if (title.zPath == sts.readingTitle)
+                if (title.path == sts.readingTitle)
                 {
                     DisplayTitle2(title);
                     break;
@@ -337,11 +337,11 @@ namespace WindowsFormsApp1
         {
             if (!m_loadTitleCompleted) return;
 
-            var key = m_edtPanel.m_title.zPath;
+            var key = m_edtPanel.m_title.path;
             m_curTitle = key;
 
             var title = m_nodeDict[key].title;
-            title.paragraphLst = m_content.getTitleParagraphs(m_edtPanel.m_dataTable);
+            //title.paragraphLst = m_content.getTitleParagraphs(m_edtPanel.m_dataTable);
 
             RenderFullTitle(title);
         }
@@ -395,8 +395,8 @@ namespace WindowsFormsApp1
             m_edtPanel.m_title = new MyTitle()
             {
                 ID = title.ID,
-                zPath = title.zPath,
-                zTitle = title.zTitle
+                path = title.path,
+                title = title.title
             };
             m_loadTitleCompleted = false;
             m_edtPanel.loadTitle();
@@ -518,10 +518,10 @@ namespace WindowsFormsApp1
             }
             foreach (var title in selected)
             {
-                if (title.paragraphLst == null)
-                {
-                    title.paragraphLst = m_content.getTitleParagraphs(title.ID);
-                }
+                //if (title.paragraphLst == null)
+                //{
+                //    title.paragraphLst = m_content.getTitleParagraphs(title.ID);
+                //}
             }
             return selected;
         }
@@ -576,8 +576,8 @@ namespace WindowsFormsApp1
 
         private void DisplayTitle(MyTitle title)
         {
-            Debug.Assert(title.zPath != m_curTitle);
-            title.paragraphLst = m_content.getTitleParagraphs(title.ID);
+            Debug.Assert(title.path != m_curTitle);
+            //title.paragraphLst = m_content.getTitleParagraphs(title.ID);
             RenderFullTitle(title);
         }
 
@@ -627,8 +627,8 @@ namespace WindowsFormsApp1
         {
             foreach (var title in titles)
             {
-                var tNode = addRow('T', title.paragraphLst == null ? 0 : (UInt64)title.paragraphLst.Count,
-                    title.zPath, title.zTitle);
+                var tNode = addRow('T', 1,
+                    title.path, title.title);
                 tNode.title = title;
             }
         }
@@ -833,7 +833,7 @@ namespace WindowsFormsApp1
 
         void DisplayTitle2(MyTitle title)
         {
-            if (m_curTitle == title.zPath) return;
+            if (m_curTitle == title.path) return;
 
             DisplayTitle(title);
             if (isEditing)
@@ -841,7 +841,7 @@ namespace WindowsFormsApp1
                 BeginEditTitle(title);
             }
 
-            m_curTitle = title.zPath;
+            m_curTitle = title.path;
         }
 
         protected enum TreeStyle
@@ -1027,12 +1027,12 @@ namespace WindowsFormsApp1
         [DataMember(Name = "ID", EmitDefaultValue = false)]
         public UInt64 ID;
         [DataMember(Name = "title", EmitDefaultValue = false)]
-        public string zTitle;
-        public UInt64 pathId;
+        public string title;
+        public UInt64 groupID;
         [DataMember(Name = "path", EmitDefaultValue = false)]
-        public string zPath;
-        [DataMember(Name = "paragraphs", EmitDefaultValue = false)]
-        public List<MyParagraph> paragraphLst;
+        public string path;
+        [DataMember(Name = "content", EmitDefaultValue = false)]
+        public string content;
         public int ord;
     }
     [DataContract(Name = "MyParagraph")]

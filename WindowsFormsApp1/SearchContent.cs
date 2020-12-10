@@ -364,7 +364,7 @@ namespace WindowsFormsApp1
             return new MyTitle()
             {
                 ID = id,
-                zTitle = zTitle,
+                title = zTitle,
             };
         }
         MyParagraph getParContent(UInt64 id)

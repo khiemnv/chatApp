@@ -229,7 +229,7 @@ namespace WindowsFormsApp1
             {
                 var mt = new MarkedTitle();
                 mt.titleId = rec.detail[0].titleId;
-                mt.title = res.titles.Find((t) => t.ID == mt.titleId).zTitle;
+                mt.title = res.titles.Find((t) => t.ID == mt.titleId).title;
                 //<par,[point]>
                 var tDict = new Dictionary<UInt64, List<int[]>>();
                 var parLst = new List<MyParagraph>();

@@ -169,7 +169,7 @@ namespace WindowsFormsApp1
             }
             else
             {
-                m_titlesCmb.DataSource = m_titles.Select(value => new { value.ID, value.zPath }).ToList();
+                m_titlesCmb.DataSource = m_titles.Select(value => new { value.ID, value.path}).ToList();
             }
             m_titlesCmb.DisplayMember = "zPath";
             m_titlesCmb.ValueMember = "ID";
