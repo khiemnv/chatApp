@@ -77,20 +77,63 @@
         ctx3.fillText("Hello World", 10, 10);
 
         div.appendChild(document.createElement("br"));
+        var text = "Hello World \nHello World Hello \nWorld Hello World ";
+        //var sp = div.appendChild(document.createElement("span"));
+        //sp.style.marginLeft = "10px";
+        var cv = renderMsg(div, text);
+        cv.style.marginLeft = "10px";
 
-        //var p = document.createElement("span");
-        var cv3 = document.createElement("canvas");
-        div.appendChild(cv3);
-        //p.appendChild(cv3);
-        cv3.width = 100;
-        cv3.height = 50;
-        ctx3 = cv3.getContext("2d");
-        ctx3.fillStyle = "#FFFF00";
-        ctx3.fillRect(0, 0, 150, 75);
-        ctx3.fillStyle = "black";
-        ctx3.font = "12px Arial";
-        var text = ctx.measureText('foo');
-        ctx3.fillText("Hello World \nHello World Hello \nWorld Hello World ", 10, 10);
+        function renderMsg(div, text) {
+            var w = 100;
+            var dy = 12;
+            var cv = document.createElement("canvas");
+            div.appendChild(cv);
+            ctx = cv.getContext("2d");
+
+            //split text
+            ctx.fillStyle = "black";
+            ctx.font = "12px Arial";
+            var lines = calCtxSizeH(ctx, text, w);
+            var h = lines.length * dy;
+
+            //resize canvas
+            cv.width = w;
+            cv.height = h;
+
+            //rectangle
+            ctx.fillStyle = "#FFFF00";
+            ctx.fillRect(0, 0, w, h);
+
+            //texgt
+            ctx.fillStyle = "black";
+            ctx.font = "12px Arial";
+            var y = dy;
+            for (var i in lines) {
+                ctx.fillText(lines[i], 0, y);
+                y += dy;
+            }
+            return cv;
+        }
+
+        //line contain space at end
+        function calCtxSizeH(ctx, txt, max_w) {
+            var lines = [];
+            var w = 0;
+            var line = "";
+            var arr = txt.split(/\s+/);
+            for (var i in arr) {
+                var size = ctx.measureText(arr[i] + " ");
+                w += size.width;
+                if (w > max_w) {
+                    lines.push(line);
+                    line = ""
+                    w = 0;
+                }
+                line += arr[i] + " ";
+            }
+            lines.push(line);
+            return lines;
+        }
 
         /**
          * Draws a rounded rectangle using the current state of the canvas.
