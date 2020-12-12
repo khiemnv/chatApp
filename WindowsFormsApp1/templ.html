@@ -396,6 +396,9 @@
             var renderLst = [];
             for (var i in path) {
                 var name = path[i];
+                if (parent.childs == null) {
+                    parent.childs = {};
+                }
                 if (parent.childs[name] != null) {
                     child = parent.childs[name];
                 } else {
@@ -734,23 +737,55 @@
 
         function onSpanClick(nodeId) {
             var tNode = g_nodesDict[nodeId];
-            if (tNode.lect == null) return;
+            //if (tNode.lect == null) return;
 
-            var titleId = tNode.lect.ID;
+            //var titleId = tNode.lect.ID;
             //var src = baseUrl + "/" + titleId + ".html";
             //show("iframe2", true);
             //document.getElementById("iframe2").src = "titles/" + titleId + ".html";
             var tDiv = document.getElementById("id_content");
-            renderTitle(tNode.lect.paragraphs, tDiv);
-            g_playingTitle = tNode.lect;
-            g_playingPar = 0;
+            var paragraphs = crtParagraphs(tNode);
+            renderPars(paragraphs, tDiv);
+            //g_playingTitle = tNode.lect;
+            //g_playingPar = 0;
 
             menuShowHide();
-            stsSetCurTitle(tNode.lect.ID);
-            stsSave();
+            //stsSetCurTitle(tNode.lect.ID);
+            //stsSave();
+        }
+        function renderLect(lect) {
+            var tDiv = document.getElementById("id_content");
+            var tNode = g_titlesDict[lect.ID];
+            var paragraphs = crtParagraphs(tNode);
+            renderPars(paragraphs, tDiv);
+        }
+        function crtParagraphs(tNode) {
+            var ret = [];
+            var lst = traceNodeDFS(tNode, 0);
+            for (var i in lst) {
+                var msg = lst[i].lect;
+                if (msg != null) {
+                    var p = {
+                        "ID" : msg.ID,
+                        "content": msg.content,
+                        "leftIndent": lst[i].lvl * 5
+                    };
+                    ret.push(p);
+                }
+            }
+            return ret;
+        }
+        function traceNodeDFS(tNode, lvl) {
+            tNode.lvl = lvl;
+            var lst = [tNode];
+            for (var i in tNode.childs) {
+                clst = traceNodeDFS(tNode.childs[i], lvl+1);
+                lst = lst.concat(clst);
+            }
+            return lst;
         }
 
-        function renderTitle(pars, tDiv) {
+        function renderPars(pars, tDiv) {
             tDiv.textContent = "";
             for (var i in pars) {
                 var par = pars[i];
@@ -766,7 +801,7 @@
                 if (par.fontItalic == -1) {
                     el.style.fontStyle = 'italic';
                 }
-                el.style.paddingLeft = par.leftIndent;
+                el.style.paddingLeft = par.leftIndent + "px";
                 el.innerText = par.content.replace(/\u000b/g, '\r');
                 tDiv.appendChild(el);
             }
@@ -1278,7 +1313,7 @@
             if (g_stsData.curTitle != 0) {
                 var tNode = g_titlesDict[g_stsData.curTitle];
                 var tDiv = document.getElementById("id_content");
-                renderTitle(tNode.lect.paragraphs, tDiv);
+                renderPars(tNode.lect.paragraphs, tDiv);
             }
             //collapsed
             var clps = g_stsData.collapsedLst;
@@ -1500,8 +1535,7 @@
 
         g_playingTitle = g_lectLst[0];
         g_playingPar = 0;
-        renderTitle(g_lectLst[0].paragraphs,
-            document.getElementById("id_content"));
+        renderLect(g_lectLst[0]);
 
         menuShowHide();
 

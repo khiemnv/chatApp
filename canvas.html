@@ -78,10 +78,23 @@
 
         div.appendChild(document.createElement("br"));
         var text = "Hello World \nHello World Hello \nWorld Hello World ";
-        //var sp = div.appendChild(document.createElement("span"));
-        //sp.style.marginLeft = "10px";
-        var cv = renderMsg(div, text);
-        cv.style.marginLeft = "10px";
+        var d = div.appendChild(document.createElement("div"));
+        d.style.marginLeft = "10px";
+        var cv = renderMsg(d, text);
+        //cv.style.marginLeft = "10px";
+        //cv.style.float = "right";
+
+        var d2 = d.appendChild(document.createElement("div"));
+        d2.style.marginLeft = "10px";
+        var cv = renderMsg(d2, "child child child child chidl chidlchild chidl chidl");
+
+
+        var rd = div.appendChild(document.createElement("div"));
+        rd.style.marginLeft = "100px";
+        var cv = renderMsg(rd, "right right right right right right right right");
+        var rd2 = rd.appendChild(document.createElement("div"));
+        rd2.style.marginLeft = "-10px";
+        var cv = renderMsg(rd2, "right right right right right right right right");
 
         function renderMsg(div, text) {
             var w = 100;

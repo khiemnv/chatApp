@@ -568,10 +568,26 @@ namespace WindowsFormsApp1
                 m_rtb.SelectedText = Environment.NewLine;
             }
 #else
-            string jsTxt = TitlesLstToJson(title);
+            var node = m_nodeDict[title.path];
+            var lst = getAllTitleR(node);
+            string jsTxt = TitlesLstToJson(lst);
             string htmlTxt = GenHtmlTxt(jsTxt);
             UpdateWB(htmlTxt);
 #endif
+        }
+
+        private List<MyTitle> getAllTitleR(Node node)
+        {
+            List<MyTitle> lst = new List<MyTitle>();
+            if (node.title != null)
+            {
+                lst.Add(node.title);
+            }
+            foreach(var child in node.childs)
+            {
+                lst.AddRange(getAllTitleR(child));
+            }
+            return lst;
         }
 
         private void DisplayTitle(MyTitle title)
@@ -813,11 +829,11 @@ namespace WindowsFormsApp1
                 string key = (string)e.Node.Tag;
 
                 var tNode = m_nodeDict[key];
-                var title = tNode.title;
-                if (title == null) { return; }
+                //var title = tNode.title;
+                //if (title == null) { return; }
 
                 //avoid re display title
-                DisplayTitle2(title);
+                DisplayNode(tNode);
             }
             else if (info.Location == System.Windows.Forms.TreeViewHitTestLocations.StateImage)
             {
@@ -829,6 +845,14 @@ namespace WindowsFormsApp1
             {
                 return;
             }
+        }
+
+        private void DisplayNode(Node node)
+        {
+            var lst = getAllTitleR(node);
+            string jsTxt = TitlesLstToJson(lst);
+            string htmlTxt = GenHtmlTxt(jsTxt);
+            UpdateWB(htmlTxt);
         }
 
         void DisplayTitle2(MyTitle title)

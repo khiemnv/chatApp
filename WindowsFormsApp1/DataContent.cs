@@ -743,10 +743,10 @@ namespace WindowsFormsApp1
         }
         public override void getTitleParagraphs(UInt64 titleId, DataTable dataTable)
         {
-            m_dataAdapter.SelectCommand.Parameters[0].Value = titleId;
-            dataTable.Clear();
-            dataTable.Locale = System.Globalization.CultureInfo.InvariantCulture;
-            m_dataAdapter.Fill(dataTable);
+            //m_dataAdapter.SelectCommand.Parameters[0].Value = titleId;
+            //dataTable.Clear();
+            //dataTable.Locale = System.Globalization.CultureInfo.InvariantCulture;
+            //m_dataAdapter.Fill(dataTable);
         }
         public override DataTable getTitles()
         {
