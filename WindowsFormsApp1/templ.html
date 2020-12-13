@@ -125,7 +125,7 @@
                     <button id="id_toggleMenuBtn" class="fontBtn" style="width: auto" onclick="menuShowHide()">目</button>
                 </td>
                 <td>
-                    <span id="id_sutraTitle" style="white-space: nowrap; font-weight: bold">Ðại Tạng Kinh Việt Nam</span>
+                    <span id="id_sutraTitle" style="white-space: nowrap; font-weight: bold">ChatApp</span>
                 </td>
                 <td style="width: 100%"></td>
                 <td>
@@ -801,10 +801,133 @@
                 if (par.fontItalic == -1) {
                     el.style.fontStyle = 'italic';
                 }
-                el.style.paddingLeft = par.leftIndent + "px";
+                el.style.marginLeft = par.leftIndent + "px";
+                el.style.marginRight = "5px";
+                el.style.paddingLeft = "5px";
+                el.style.paddingRight = "5px";
                 el.innerText = par.content.replace(/\u000b/g, '\r');
+                el.style.backgroundColor = "rgb(133,240,90)";
                 tDiv.appendChild(el);
+
+                //var msgColor = "rgb(133,240,90)";
+                //var rd = tDiv.appendChild(document.createElement("p"));
+                //rd.style.marginLeft = par.leftIndent + "px";
+                //cv_renderMsg(rd, par.content, msgColor);
             }
+        }
+
+
+    </script>
+    <script>
+        //canvas message render
+
+        function cv_renderMsg(div, text, msgColor) {
+            var r = 5;
+            //var w = 100;
+            w = div.clientWidth * 0.75; // 75%
+            var dy = 12;    //font = 12
+            var cv = document.createElement("canvas");
+            div.appendChild(cv);
+            ctx = cv.getContext("2d");
+
+            //split text
+            ctx.fillStyle = "black";
+            ctx.font = "12px Arial";
+            var lines = cv_calCtxSizeH(ctx, text, w);
+            var h = lines.length * dy;
+
+            //resize canvas
+            cv.width = w + 2 * r;
+            cv.height = h + 2 * r;
+
+            //rectangle
+            ctx.fillStyle = msgColor;
+            //ctx.fillRect(0, 0, w, h);
+            cv_roundRect(ctx, 0, 0, w + 2 * r, h + 2 * r, 2 * r, 1, 1);
+
+            //texgt
+            ctx.fillStyle = "black";
+            ctx.font = "12px Arial";
+            var y = dy + r;
+            for (var i in lines) {
+                ctx.fillText(lines[i], r, y);
+                y += dy;
+            }
+
+            return cv;
+        }
+
+        //line contain space at end
+        function cv_calCtxSizeH(ctx, txt, max_w) {
+            var lines = [];
+            var w = 0;
+            var line = "";
+            var arr = txt.split(/\s+/);
+            for (var i in arr) {
+                var size = ctx.measureText(arr[i] + " ");
+                if ((w + size.width) > max_w) {
+                    lines.push(line);
+                    line = ""
+                    w = 0;
+                }
+                line += arr[i] + " ";
+                w += size.width;
+            }
+            lines.push(line);
+            return lines;
+        }
+
+        /**
+         * Draws a rounded rectangle using the current state of the canvas.
+         * If you omit the last three params, it will draw a rectangle
+         * outline with a 5 pixel border radius
+         * @param {CanvasRenderingContext2D} ctx
+         * @param {Number} x The top left x coordinate
+         * @param {Number} y The top left y coordinate
+         * @param {Number} width The width of the rectangle
+         * @param {Number} height The height of the rectangle
+         * @param {Number} [radius = 5] The corner radius; It can also be an object
+         *                 to specify different radii for corners
+         * @param {Number} [radius.tl = 0] Top left
+         * @param {Number} [radius.tr = 0] Top right
+         * @param {Number} [radius.br = 0] Bottom right
+         * @param {Number} [radius.bl = 0] Bottom left
+         * @param {Boolean} [fill = false] Whether to fill the rectangle.
+         * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
+         */
+        function cv_roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof stroke === 'undefined') {
+                stroke = true;
+            }
+            if (typeof radius === 'undefined') {
+                radius = 5;
+            }
+            if (typeof radius === 'number') {
+                radius = { tl: radius, tr: radius, br: radius, bl: radius };
+            } else {
+                var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+                for (var side in defaultRadius) {
+                    radius[side] = radius[side] || defaultRadius[side];
+                }
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + radius.tl, y);
+            ctx.lineTo(x + width - radius.tr, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+            ctx.lineTo(x + width, y + height - radius.br);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+            ctx.lineTo(x + radius.bl, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+            ctx.lineTo(x, y + radius.tl);
+            ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+            ctx.closePath();
+            if (fill) {
+                ctx.fill();
+            }
+            if (stroke) {
+                ctx.stroke();
+            }
+
         }
     </script>
     <script src='https://code.responsivevoice.org/responsivevoice.js'></script>

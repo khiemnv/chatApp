@@ -31,16 +31,16 @@
         var ctx = document.getElementById("rounded-rect").getContext("2d");
         // Draw using default border radius,
         // stroke it but no fill (function's default values)
-        roundRect(ctx, 5, 5, 50, 50);
+        cv_roundRect(ctx, 5, 5, 50, 50);
         // To change the color on the rectangle, just manipulate the context
         ctx.strokeStyle = "rgb(255, 0, 0)";
         ctx.fillStyle = "rgba(255, 255, 0, .5)";
-        roundRect(ctx, 100, 5, 100, 100, 20, true);
+        cv_roundRect(ctx, 100, 5, 100, 100, 20, true);
         // Manipulate it again
         ctx.strokeStyle = "#0f0";
         ctx.fillStyle = "#ddd";
         // Different radii for each corner, others default to 0
-        roundRect(ctx, 300, 5, 200, 100, {
+        cv_roundRect(ctx, 300, 5, 200, 100, {
             tl: 50,
             br: 25
         }, true);
@@ -48,7 +48,7 @@
         ctx2 = cv.getContext("2d");
         ctx2.strokeStyle = "rgb(192, 192, 192)";
         ctx2.fillStyle = "rgba(255, 255, 255, .5)";
-        roundRect(ctx2, 5, 5, 100, 100, 5, true);
+        cv_roundRect(ctx2, 5, 5, 100, 100, 5, true);
 
         ctx2.fillStyle = "rgb(0, 0, 0)";
         ctx2.font = "12px Arial";
@@ -80,23 +80,24 @@
         var text = "Hello World \nHello World Hello \nWorld Hello World ";
         var d = div.appendChild(document.createElement("div"));
         d.style.marginLeft = "10px";
-        var cv = renderMsg(d, text);
+        var cv = cv_renderMsg(d, text);
         //cv.style.marginLeft = "10px";
         //cv.style.float = "right";
 
         var d2 = d.appendChild(document.createElement("div"));
         d2.style.marginLeft = "10px";
-        var cv = renderMsg(d2, "child child child child chidl chidlchild chidl chidl");
+        var cv = cv_renderMsg(d2, "child child child child chidl chidlchild chidl chidl");
 
 
-        var rd = div.appendChild(document.createElement("div"));
+        var rd = div.appendChild(document.createElement("p"));
         rd.style.marginLeft = "100px";
-        var cv = renderMsg(rd, "right right right right right right right right");
-        var rd2 = rd.appendChild(document.createElement("div"));
+        var cv = cv_renderMsg(rd, "right1 right2 right3 right4 right5 right6 right7 right8");
+        var rd2 = rd.appendChild(document.createElement("p"));
         rd2.style.marginLeft = "-10px";
-        var cv = renderMsg(rd2, "right right right right right right right right");
+        var cv = cv_renderMsg(rd2, "right1 right2 right3 right4 right right right right8");
 
-        function renderMsg(div, text) {
+        function cv_renderMsg(div, text) {
+            var r = 5;
             var w = 100;
             var dy = 12;
             var cv = document.createElement("canvas");
@@ -106,43 +107,45 @@
             //split text
             ctx.fillStyle = "black";
             ctx.font = "12px Arial";
-            var lines = calCtxSizeH(ctx, text, w);
+            var lines = cv_calCtxSizeH(ctx, text, w);
             var h = lines.length * dy;
 
             //resize canvas
-            cv.width = w;
-            cv.height = h;
+            cv.width = w+2*r;
+            cv.height = h+2*r;
 
             //rectangle
-            ctx.fillStyle = "#FFFF00";
-            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = "rgb(192,192,192)";
+            //ctx.fillRect(0, 0, w, h);
+            cv_roundRect(ctx, 0, 0, w+2*r, h+2*r, 2*r, 1, 1);
 
             //texgt
             ctx.fillStyle = "black";
             ctx.font = "12px Arial";
-            var y = dy;
+            var y = dy + r;
             for (var i in lines) {
-                ctx.fillText(lines[i], 0, y);
+                ctx.fillText(lines[i], r, y);
                 y += dy;
             }
+
             return cv;
         }
 
         //line contain space at end
-        function calCtxSizeH(ctx, txt, max_w) {
+        function cv_calCtxSizeH(ctx, txt, max_w) {
             var lines = [];
             var w = 0;
             var line = "";
             var arr = txt.split(/\s+/);
             for (var i in arr) {
                 var size = ctx.measureText(arr[i] + " ");
-                w += size.width;
-                if (w > max_w) {
+                if ((w + size.width) > max_w) {
                     lines.push(line);
                     line = ""
                     w = 0;
                 }
                 line += arr[i] + " ";
+                w += size.width;
             }
             lines.push(line);
             return lines;
@@ -166,7 +169,7 @@
          * @param {Boolean} [fill = false] Whether to fill the rectangle.
          * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
          */
-        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+        function cv_roundRect(ctx, x, y, width, height, radius, fill, stroke) {
             if (typeof stroke === 'undefined') {
                 stroke = true;
             }
