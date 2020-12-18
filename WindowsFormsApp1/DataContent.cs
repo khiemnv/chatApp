@@ -782,82 +782,133 @@ namespace WindowsFormsApp1
         public override List<MyTitle> getTitles2()
         {
             OleDbConnection cnn = m_cnn;
+            var lst = new List<MyTitle>();
+
             //get paths
-            var pathLst = new List<pathItem>();
+            var pathLst = new List<MyTitle>();
             var qry = "select * from groups order by nOrd ASC";
             var cmd = new OleDbCommand(qry, cnn);
             var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                pathLst.Add(new pathItem()
+                pathLst.Add(new MyTitle()
                 {
-                    id = Convert.ToUInt64(reader["ID"]),
+                    ID = Convert.ToUInt64(reader["ID"]),
                     path = Convert.ToString(reader["zPath"]),
-                    name = Convert.ToString(reader["zName"])
+                    title = Convert.ToString(reader["zName"]),
+                    parentID = Convert.ToUInt64(reader["parentID"]),
+                    type = "group",
+                    childs = new Dictionary<ulong, MyTitle>()
                 });
             }
             reader.Close();
 
-            //resolve path
-            resolvePath(pathLst);
+            //add to lst
+            lst.AddRange(pathLst);
 
             //get title
-            var titleLst = new List<MyTitle>();
-            var qry2 = "select * from messages WHERE groupID = @groupID order by nOrd ASC";
+            var qry2 = "select * from messages WHERE groupID = @groupID";
             var cmd2 = new OleDbCommand(qry2, cnn);
             cmd2.Parameters.Add("@groupID", OleDbType.Integer);
-            foreach (var pi in pathLst)
+
+            var tDict = new Dictionary<UInt64, MyTitle>();
+            foreach (var group in pathLst)
             {
-                cmd2.Parameters[0].Value = pi.id;
+                var titleLst = new List<MyTitle>();
+                cmd2.Parameters[0].Value = group.ID;
                 var reader2 = cmd2.ExecuteReader();
-                int ord = 0;
                 while (reader2.Read())
                 {
-                    var title = new MyTitle();
-                    title.ID = Convert.ToUInt64(reader2["ID"]);
-                    title.title = Convert.ToString(reader2["zTitle"])
-                        .TrimEnd(new char[] { '\r', '\n', '\v' });
-                    title.groupID = Convert.ToUInt64(reader2["groupID"]);
-                    title.path = pi.path + "/" + Convert.ToString(reader2["zPath"]);
-                    title.ord = Convert.ToInt32(reader2["nOrd"]);
-                    title.content = Convert.ToString(reader2["zContent"]);
+                    var title = crtTitle(reader2);
+                    tDict.Add(title.ID, title);
                     titleLst.Add(title);
-                    Debug.Assert(title.ord > ord);
-                    ord = title.ord;
                 }
                 reader2.Close();
+
+                //resolve path
+                var missLst = resolveMsgPath(titleLst, tDict, group);
+                lst.AddRange(missLst);
+
+                //add to lst
+                lst.AddRange(titleLst);
+
+                //resoleve Path
+                group.path = group.title;
+                resolveTitlePath(group,group.path);
             }
 
-            //resolve path
-            resolveMsgPath(titleLst);
-
-            return titleLst;
+            return lst;
         }
 
-        private void resolveMsgPath(List<MyTitle> titleLst)
+        private void resolveTitlePath(MyTitle group, string v)
         {
-            var tDict = new Dictionary<string, string>();
-            foreach (var title in titleLst)
+            if (group.childs != null)
             {
-                tDict.Add(title.ID.ToString(), title.title);
-            }
-            foreach (var title in titleLst)
-            {
-                var arr = title.path.Split(new char[] { '/' },StringSplitOptions.RemoveEmptyEntries);
-                var newpath = "";
-                foreach (var tid in arr)
+                foreach (var c in group.childs.Values)
                 {
-                    if (tDict.ContainsKey(tid))
-                    {
-                        newpath += tDict[tid] + "/";
-                    }
-                    else
-                    {
-                        newpath += tid + "/";
-                    }
+                    c.path = group.path + "/" + c.title;
+                    resolveTitlePath(c, c.path);
                 }
-                title.path = newpath + title.title;
             }
+        }
+
+        private MyTitle crtTitle(OleDbDataReader rd)
+        {
+            var title = new MyTitle();
+            title.ID = Convert.ToUInt64(rd["ID"]);
+            title.title = Convert.ToString(rd["zTitle"])
+                .TrimEnd(new char[] { '\r', '\n', '\v' });
+            title.groupID = Convert.ToUInt64(rd["groupID"]);
+            title.path = Convert.ToString(rd["zPath"]);
+            title.parentID = Convert.ToUInt64(rd["parentID"]);
+            title.ord = Convert.ToInt32(rd["nOrd"]);
+            title.content = Convert.ToString(rd["zContent"]);
+            title.type = "title";
+            return title;
+        }
+        private List<MyTitle> resolveMsgPath(List<MyTitle> titleLst, Dictionary<UInt64, MyTitle> tDict, MyTitle group)
+        {
+            var lst = new List<MyTitle>();
+            foreach (var title in titleLst)
+            {
+                MyTitle parent;
+                if(title.parentID == 0) {
+                    //add to group
+                    parent = group;
+                }
+                else if (tDict.ContainsKey(title.parentID))
+                {
+                    //do nothing
+                    parent = tDict[title.parentID];
+                }
+                else
+                {
+                    parent = getOneTitle(title.parentID);
+                    tDict.Add(parent.ID, parent);
+                    lst.Add(parent);
+                }
+                if (parent.childs == null)
+                {
+                    parent.childs = new Dictionary<ulong, MyTitle>();
+                }
+                parent.childs.Add(title.ID, title);
+            }
+            return lst;
+        }
+
+        public MyTitle getOneTitle(UInt64 id)
+        {
+            OleDbConnection cnn = m_cnn;
+            var qry = "select * from messages WHERE ID = @ID";
+            var cmd = new OleDbCommand(qry, cnn);
+            cmd.Parameters.Add("@ID", OleDbType.Integer);
+            cmd.Parameters[0].Value = id;
+            var reader = cmd.ExecuteReader();
+            var ret = reader.Read();
+            Debug.Assert(ret);
+            var title = crtTitle(reader);
+            reader.Close();
+            return title;
         }
 
         private void resolvePath(List<pathItem> pathLst)
@@ -873,9 +924,11 @@ namespace WindowsFormsApp1
                 var newpath = "";
                 foreach (var tid in arr)
                 {
-                    newpath += tDict[tid] + "/";
+                    //newpath += tDict[tid] + "/";
+                    newpath += tid + "/";
                 }
-                tpath.path = newpath + tpath.name;
+                tpath.path = newpath + tpath.id.ToString();
+                //tpath.path = newpath + tpath.name;
             }
         }
 

@@ -19,6 +19,7 @@ using System.Runtime.Serialization.Json;
 using System.Text.RegularExpressions;
 using System.Speech.Synthesis;
 using System.Runtime.CompilerServices;
+using Newtonsoft.Json;
 //using Gecko.WebIDL;
 
 namespace WindowsFormsApp1
@@ -250,6 +251,22 @@ namespace WindowsFormsApp1
                 this.Location = cfg.m_wndPos;
                 this.Size = cfg.m_wndSize;
             }
+
+            m_wb.AddMessageEventListener("addNewMsg", OnaddNewMsg);
+        }
+
+        //req addNewMsg(newMsg)
+        private void OnaddNewMsg(string obj)
+        {
+            MyTitle newMsg = new MyTitle();
+            newMsg = JsonToTitle(obj);
+            //add to db
+            newMsg.title = "new title";
+            newMsg.ID = 4;
+            newMsg.path = newMsg.path + newMsg.title;
+            //update wb
+            string jsTxt = TitleToJson(newMsg);
+            m_wb.ExecuteCommand("onSendChatDone('" + jsTxt + "')");
         }
 
         void UpdateFormName()
@@ -619,6 +636,27 @@ namespace WindowsFormsApp1
             mem.Position = 0;
             string myStr = sr.ReadToEnd();
             return myStr;
+        }
+        string TitleToJson(MyTitle title)
+        {
+            //var x = createSerializer(title.GetType());
+            //var mem = new MemoryStream();
+            //x.WriteObject(mem, title);
+            //StreamReader sr = new StreamReader(mem);
+            //mem.Position = 0;
+            //string myStr = sr.ReadToEnd();
+            //return myStr;
+            return JsonConvert.SerializeObject(title);
+        }
+        MyTitle JsonToTitle(string jsTxt)
+        {
+            //var x = createSerializer(typeof(MyTitle));
+            //var mem = new MemoryStream();
+            //StreamWriter sw = new StreamWriter(mem);
+            //sw.Write(jsTxt);
+            //MyTitle title =  x.ReadObject(mem) as MyTitle;
+            //return title;
+            return JsonConvert.DeserializeObject<MyTitle>(jsTxt);
         }
 
         protected void UpdateWB(string htmlTxt)
@@ -1052,12 +1090,18 @@ namespace WindowsFormsApp1
         public UInt64 ID;
         [DataMember(Name = "title", EmitDefaultValue = false)]
         public string title;
-        public UInt64 groupID;
         [DataMember(Name = "path", EmitDefaultValue = false)]
         public string path;
         [DataMember(Name = "content", EmitDefaultValue = false)]
         public string content;
+        [DataMember(Name = "type", EmitDefaultValue = false)]
+        public string type; // [group/msg]
+
+        public UInt64 groupID;
+        public string groupPath;
         public int ord;
+        public UInt64 parentID;
+        public Dictionary<UInt64, MyTitle> childs;
     }
     [DataContract(Name = "MyParagraph")]
     public class MyParagraph

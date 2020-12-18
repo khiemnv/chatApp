@@ -68,6 +68,11 @@
             bottom: 5px;
             right: 5px;
         }
+        div.chatCtrls {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+        }
         div.menu {
             position: fixed;
             top: 50px;
@@ -143,7 +148,7 @@
             </tr>
         </table>
     </div>
-    <div id="id_botCtrls" class="botCtrls">
+    <div id="id_botCtrls" class="botCtrls" hidden="hidden">
         <span style="white-space: nowrap">
             <button class="playBtn" id="id_playContent" onclick="onPlayContent()">⏯️</button>
             <button class="playBtn" id="id_stopSpeek" onclick="onStopSpeek()">⏹️</button>
@@ -153,6 +158,17 @@
             <button class="playBtn" id="id_nextTitle" onclick="onNextTitle()">⏭</button>
             <span id="id_playContentSts" style="font-family: 'MS Gothic'">stoped&nbsp;</span>
         </span>
+    </div>
+    <div id="id_chatCtrls" class="chatCtrls">
+        <table>
+            <tr>
+                <td><label id="id_chatTo">To: </label></td>
+            </tr>
+            <tr>
+                <td><textarea id="id_chatEdt" rows="3" cols="50">chat msg</textarea></td>
+                <td><button id="id_chatSendBtn" onclick="onSendChat()">Send</button></td>
+            </tr>
+        </table>
     </div>
     <div id="id_menu" class="menu">
         <div id="root_childs" class="miChilds">
@@ -752,6 +768,10 @@
             menuShowHide();
             //stsSetCurTitle(tNode.lect.ID);
             //stsSave();
+
+            g_curTitle = tNode.lect;    //chat
+            var to = document.getElementById("id_chatTo");
+            to.innerText = "To: " + g_curTitle.title;
         }
         function renderLect(lect) {
             var tDiv = document.getElementById("id_content");
@@ -764,7 +784,7 @@
             var lst = traceNodeDFS(tNode, 0);
             for (var i in lst) {
                 var msg = lst[i].lect;
-                if (msg != null) {
+                if (msg != null && msg.type == "title") {
                     var p = {
                         "ID" : msg.ID,
                         "content": msg.content,
@@ -1634,6 +1654,35 @@
         } 
     </script>
     <script>
+        //chat
+        function onSendChat() {
+            var ta = document.getElementById("id_chatEdt");
+            var msgTxt = ta.value;
+            var curTitle = g_curTitle;
+            var path = curTitle.path + '/';     //new msg
+            var newMsg = {
+                "content": msgTxt,
+                "path":path
+            };
+            req_addNewMsg(newMsg);
+        }
+        function onSendChatDone(znewMsg) {
+            alert(znewMsg);
+            var newMsg = JSON.parse(znewMsg);
+            addLectItem(g_rootNode, newMsg);
+        }
+    </script>
+
+    <script>
+        //db
+        function req_addNewMsg(newMsg) {
+            var fname = "addNewMsg";
+            var parameter = JSON.stringify(newMsg);
+            var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+            document.dispatchEvent(event);
+        }
+    </script>
+    <script>
         //mainx1() - part x1
         document.getElementById("id_gotoTopBtn").style.display = "none";
         document.getElementById("id_gotoTopBtn").hidden="hidden";
@@ -1659,6 +1708,8 @@
         g_playingTitle = g_lectLst[0];
         g_playingPar = 0;
         renderLect(g_lectLst[0]);
+
+        g_curTitle = g_lectLst[0];  //chat
 
         menuShowHide();
 
