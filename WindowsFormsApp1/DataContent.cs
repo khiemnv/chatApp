@@ -661,6 +661,10 @@ namespace WindowsFormsApp1
         public virtual List<MyTitle> getTitles2() { throw new NotImplementedException(); }
         public virtual List<MyParagraph> getTitleParagraphs(DataTable dt) { throw new NotImplementedException(); }
         public virtual List<MyParagraph> getTitleParagraphs(UInt64 titleId) { throw new NotImplementedException(); }
+        public virtual MyTitle newTitle(MyTitle title)
+        {
+            throw new NotImplementedException();
+        }
         #region dispose
         // Dispose() calls Dispose(true)  
         public void Dispose()
@@ -1011,6 +1015,39 @@ namespace WindowsFormsApp1
         public override object GetCnn()
         {
             return m_cnn;
+        }
+
+        public override MyTitle newTitle(MyTitle title)
+        {
+            OleDbConnection cnn = m_cnn;
+
+            var qry = "INSERT INTO messages (zContent, zPath, groupID, parentID) "
+                + "VALUES(@zContent, @zPath, @groupID, @parentID)";
+            var cmd = new OleDbCommand(qry, cnn);
+            OleDbParameter par = cmd.Parameters.Add("@zContent", OleDbType.VarWChar);
+            par.Value = title.content;
+            par = cmd.Parameters.Add("@zPath", OleDbType.VarWChar);
+            par.Value = title.path;
+            par = cmd.Parameters.Add("@groupID", OleDbType.Numeric);
+            par.Value = title.groupID;
+            par = cmd.Parameters.Add("@parentID", OleDbType.Numeric);
+            par.Value = title.parentID; 
+            int n =  cmd.ExecuteNonQuery();
+            cmd.CommandText = "Select @@Identity";
+            var id = cmd.ExecuteScalar();
+            title.ID = Convert.ToUInt64(id);
+            title.title = "new title " + title.ID.ToString();
+            title.path = title.path + "/" + title.title;
+
+            string qry2 = "UPDATE messages SET zTitle = @zTitle WHERE ID = @ID";
+            var cmd2 = new OleDbCommand(qry2, cnn);
+            cmd2.Parameters.Add("@zTitle", OleDbType.VarWChar);
+            cmd2.Parameters["@zTitle"].Value = title.title;
+            cmd2.Parameters.Add("@ID", OleDbType.Numeric);
+            cmd2.Parameters["@ID"].Value = title.ID;
+            n = cmd2.ExecuteNonQuery();
+            title.type = "title";
+            return title;
         }
 
         #region dispose

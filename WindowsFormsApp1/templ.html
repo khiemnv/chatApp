@@ -779,6 +779,8 @@
             var paragraphs = crtParagraphs(tNode);
             renderPars(paragraphs, tDiv);
         }
+
+        //__in tNode: tree node obj
         function crtParagraphs(tNode) {
             var ret = [];
             var lst = traceNodeDFS(tNode, 0);
@@ -807,6 +809,9 @@
 
         function renderPars(pars, tDiv) {
             tDiv.textContent = "";
+            appendPars(pars, tDiv);
+        }
+        function appendPars(pars, tDiv) {
             for (var i in pars) {
                 var par = pars[i];
                 var el = document.createElement('p');
@@ -1659,17 +1664,21 @@
             var ta = document.getElementById("id_chatEdt");
             var msgTxt = ta.value;
             var curTitle = g_curTitle;
-            var path = curTitle.path + '/';     //new msg
+            var path = curTitle.path;
             var newMsg = {
                 "content": msgTxt,
-                "path":path
+                "path": path
             };
             req_addNewMsg(newMsg);
         }
         function onSendChatDone(znewMsg) {
-            alert(znewMsg);
+            //alert(znewMsg);
             var newMsg = JSON.parse(znewMsg);
-            addLectItem(g_rootNode, newMsg);
+            addLectItem(g_rootNode, newMsg);    //update tree
+            var tNode = g_titlesDict[newMsg.ID];
+            var paragraphs = crtParagraphs(tNode);
+            var tDiv = document.getElementById("id_content");
+            appendPars(paragraphs, tDiv);
         }
     </script>
 

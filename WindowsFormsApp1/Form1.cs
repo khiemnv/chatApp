@@ -260,13 +260,25 @@ namespace WindowsFormsApp1
         {
             MyTitle newMsg = new MyTitle();
             newMsg = JsonToTitle(obj);
+            var tnParent = m_nodeDict[newMsg.path];
+            var parent = tnParent.title;
+            newMsg.groupID = parent.groupID;
+            newMsg.parentID = parent.ID;
+            if (parent.type == "group")
+            {
+                newMsg.parentID = 0;
+                newMsg.groupID = parent.ID;
+            }
             //add to db
-            newMsg.title = "new title";
-            newMsg.ID = 4;
-            newMsg.path = newMsg.path + newMsg.title;
+            var newObj = m_content.newTitle(newMsg);
+            //update tree
+            var tnChild = new Node() { id = newObj.path, name = newObj.title, title = newObj };
+            m_nodeDict.Add(newObj.path, tnChild);
+            tnParent.childs.Add(tnChild);
+            updateTree(tnParent, tnChild);
             //update wb
-            string jsTxt = TitleToJson(newMsg);
-            m_wb.ExecuteCommand("onSendChatDone('" + jsTxt + "')");
+            string jsTxt = TitleToJson(newObj);
+            m_wb.Navigate("javascript:onSendChatDone('" + jsTxt + "')");
         }
 
         void UpdateFormName()
@@ -787,6 +799,12 @@ namespace WindowsFormsApp1
             }
 
             tree.Nodes.Add(tnRoot);
+        }
+        void updateTree(Node parent, Node child)
+        {
+            var tnParent = parent.tnode;
+            child.tnode = CreateTreeNode(child);
+            tnParent.Nodes.Add(child.tnode);
         }
         private ImageList CrtChkBoxImg()
         {
