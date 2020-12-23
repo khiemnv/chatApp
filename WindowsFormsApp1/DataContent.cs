@@ -722,6 +722,7 @@ namespace WindowsFormsApp1
 
         private OleDbConnection m_cnn;
         OleDbDataAdapter m_dataAdapter;
+        Dictionary<UInt64, MyUser> m_userDict;
         public override void initCnn(string m_cnnStr)
         {
             //init cnn
@@ -735,6 +736,8 @@ namespace WindowsFormsApp1
             };
             m_dataAdapter.SelectCommand.Parameters.Add(
                 new OleDbParameter() { DbType = DbType.UInt64 });
+
+            m_userDict = new Dictionary<ulong, MyUser>();
         }
         public override void closeCnn()
         {
@@ -839,11 +842,65 @@ namespace WindowsFormsApp1
                 //resoleve Path
                 group.path = group.title;
                 resolveTitlePath(group,group.path);
+
+                foreach (var t in titleLst)
+                {
+                    var lLst = resolveLike(t);
+                    lst.AddRange(lLst);
+                }
             }
 
             return lst;
         }
-
+        private MyUser crtUser(OleDbDataReader rd)
+        {
+            var user = new MyUser();
+            user.ID = Convert.ToUInt64(rd["ID"]);
+            user.name = Convert.ToString(rd["zName"]);
+            return user;
+        }
+        private MyUser getUserById(UInt64 id)
+        {
+            OleDbConnection cnn = m_cnn;
+            var qry = "select * from users WHERE ID = @ID";
+            var cmd = new OleDbCommand(qry, cnn);
+            cmd.Parameters.Add("@ID", OleDbType.Integer);
+            cmd.Parameters[0].Value = id;
+            var reader = cmd.ExecuteReader();
+            var ret = reader.Read();
+            Debug.Assert(ret);
+            var user = crtUser(reader);
+            reader.Close();
+            return user;
+        }
+        private List<MyTitle> resolveLike(MyTitle title)
+        {
+            List<MyTitle> lst = new List<MyTitle>();
+            var l = new MyTitle { type = "like",
+                title = "likes",
+                path = title.path + "/likes" };
+            lst.Add(l);
+            var arr = title.likes.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var zId in arr)
+            {
+                var id = Convert.ToUInt64(zId);
+                MyUser user;
+                if (m_userDict.ContainsKey(id))
+                {
+                    user = m_userDict[id];
+                } else
+                {
+                    user = getUserById(id);
+                    m_userDict.Add(user.ID, user);
+                }
+                MyTitle t = new MyTitle() {
+                type = "user",
+                title = user.name,
+                path = l.path + "/" + user.name};
+                lst.Add(t);
+            }
+            return lst;
+        }
         private void resolveTitlePath(MyTitle group, string v)
         {
             if (group.childs != null)
@@ -867,6 +924,7 @@ namespace WindowsFormsApp1
             title.parentID = Convert.ToUInt64(rd["parentID"]);
             title.ord = Convert.ToInt32(rd["nOrd"]);
             title.content = Convert.ToString(rd["zContent"]);
+            title.likes = Convert.ToString(rd["zLike"]);
             title.type = "title";
             return title;
         }

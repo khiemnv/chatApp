@@ -33,6 +33,19 @@
             transform: scale(1.5,1.5);
         }
 
+        button.miChkBtn {
+            display: table-cell;
+            padding: 0;
+            margin: 0;
+            margin-top: 2px;
+            margin-left: 2px;
+            margin-right: 2px;
+            background-color: transparent;
+            border: 1px;
+            font-family: 'Arial Unicode MS';
+            transform: scale(1.5,1.5);
+        }
+
         span.miLabel:hover {
             color: blue;
             text-decoration: underline;
@@ -302,8 +315,8 @@
         var g_titlesDict = {};
         var baseUrl = window.location.href.replace(/\/[^/]*\.html/, "");
         var g_impSrc = {
-            "expand": "▷", //"▷＋",
-            "colapse": "▽", //"▽－",
+            "expand": "＋", //"▷＋",
+            "colapse": "－", //"▽－",
             "noop": "　",
             "checked": "■",
             "uncheck": "□",
@@ -770,9 +783,12 @@
             //stsSave();
 
             g_curTitle = tNode.lect;    //chat
+        }
+        function updateToLbl() {
             var to = document.getElementById("id_chatTo");
             to.innerText = "To: " + g_curTitle.title;
         }
+
         function renderLect(lect) {
             var tDiv = document.getElementById("id_content");
             var tNode = g_titlesDict[lect.ID];
@@ -838,7 +854,17 @@
                 //var rd = tDiv.appendChild(document.createElement("p"));
                 //rd.style.marginLeft = par.leftIndent + "px";
                 //cv_renderMsg(rd, par.content, msgColor);
+
+                //check box
+                addCheckBox(el,par);
             }
+        }
+        function addCheckBox(el,par) {
+            var chk = el.appendChild(document.createElement("button"));
+            chk.id = "id_chk_" + par.ID;
+            chk.textContent = "☐";
+            chk.className = "miChkBtn";
+            chk.onclick = function () { onChkClick(par.ID) };
         }
 
 
@@ -1667,7 +1693,8 @@
             var path = curTitle.path;
             var newMsg = {
                 "content": msgTxt,
-                "path": path
+                "path": path,
+                "type": "title"
             };
             req_addNewMsg(newMsg);
         }
@@ -1680,6 +1707,18 @@
             var tDiv = document.getElementById("id_content");
             appendPars(paragraphs, tDiv);
         }
+        function onChkClick(msgId) {
+            var tnode = g_titlesDict[msgId];
+            var msg = tnode.lect;
+            var chkId = "id_chk_" + msg.ID;
+            req_updateMsgChk(msg);
+        }
+        function onUpdateMsgChkDone(zmsg) {
+            var msg = JSON.parse(zmsg);
+            var chkId = "id_chk_" + msg.ID;
+            var chk = document.getElementById(chkId);
+            chk.textContent = "☑";
+        }
     </script>
 
     <script>
@@ -1690,6 +1729,14 @@
             var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
             document.dispatchEvent(event);
         }
+        function req_updateMsgChk(msg) {
+            //onUpdateMsgChkDone(JSON.stringify(msg));
+            var fname = "addNewMsg";
+            var parameter = JSON.striLingify(msg);
+            var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+            document.dispatchEvent(event);
+        }
+
     </script>
     <script>
         //mainx1() - part x1
@@ -1719,6 +1766,7 @@
         renderLect(g_lectLst[0]);
 
         g_curTitle = g_lectLst[0];  //chat
+        updateToLbl();              //to
 
         menuShowHide();
 

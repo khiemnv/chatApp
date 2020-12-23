@@ -1114,6 +1114,8 @@ namespace WindowsFormsApp1
         public string content;
         [DataMember(Name = "type", EmitDefaultValue = false)]
         public string type; // [group/msg]
+        [DataMember(Name = "likes", EmitDefaultValue = false)]
+        public string likes;    //user1, user2, ...
 
         public UInt64 groupID;
         public string groupPath;
@@ -1121,6 +1123,19 @@ namespace WindowsFormsApp1
         public UInt64 parentID;
         public Dictionary<UInt64, MyTitle> childs;
     }
+
+    [DataContract(Name = "MyUser")]
+    public class MyUser
+    {
+        [DataMember(Name = "ID", EmitDefaultValue = false)]
+        public UInt64 ID;
+        [DataMember(Name = "name", EmitDefaultValue = false)]
+        public string name;
+        [DataMember(Name = "phapdanh", EmitDefaultValue = false)]
+        public string phapdanh;
+    }
+
+
     [DataContract(Name = "MyParagraph")]
     public class MyParagraph
     {
