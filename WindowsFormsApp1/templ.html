@@ -449,7 +449,7 @@
 
             child.childs = null;
             child.lect = lectItem;
-            g_titlesDict[lectItem.ID] = child;  //for restore sts
+            g_titlesDict[lectItem.zID] = child;  //for restore sts
 
             //render nodes
             for (var i in renderLst) {
@@ -472,6 +472,7 @@
             var e = document.getElementById(parent.id + "_childs");
             e.removeChild(document.getElementById(child.id + "_label"));
             e.removeChild(document.getElementById(child.id + "_childs"));
+            delete parent.childs[name];
         }
 
         function treeRender(rootNode) {
@@ -757,7 +758,7 @@
             for (var i in g_nodesDict) {
                 tNode = g_nodesDict[i];
                 if (tNode.sts == 1 && tNode.lect != null) {
-                    sels.push(tNode.lect.ID);
+                    sels.push(tNode.lect.zID);
                 }
             }
             stsSetSelected(sels);
@@ -808,7 +809,7 @@
 
         function renderLect(lect) {
             var tDiv = document.getElementById("id_content");
-            var tNode = g_titlesDict[lect.ID];
+            var tNode = g_titlesDict[lect.zID];
             var paragraphs = crtParagraphs(tNode);
             renderPars(paragraphs, tDiv);
         }
@@ -821,7 +822,7 @@
                 var msg = lst[i].lect;
                 if (msg != null && msg.type == "title") {
                     var p = {
-                        "ID" : msg.ID,
+                        "zID" : msg.zID,
                         "content": msg.content,
                         "leftIndent": lst[i].lvl * 5
                     };
@@ -878,13 +879,13 @@
         }
         function addCheckBox(el,par) {
             var chk = el.appendChild(document.createElement("button"));
-            chk.id = "id_chk_" + par.ID;
+            chk.id = "id_chk_" + par.zID;
             chk.textContent = g_impSrc.unlike;
-            if (isTitleLiked(par.ID)) {
+            if (isTitleLiked(par.zID)) {
                 chk.textContent = g_impSrc.like;
             }
             chk.className = "miChkBtn";
-            chk.onclick = function () { onChkClick(par.ID) };
+            chk.onclick = function () { onChkClick(par.zID) };
         }
 
         //when load
@@ -893,7 +894,7 @@
             var msg = tnode.lect;
             var arr = msg.likes.split(",");
             for (var i in arr) {
-                if (parseInt(arr[i]) == g_userID) {
+                if (arr[i] == g_user.zID) {
                     return true;
                 }
             }
@@ -907,7 +908,7 @@
                 var l = tnode.childs["likes"];
                 for (var i in l.childs) {
                     var c = l.childs[i];
-                    if (c.lect.ID == g_userID) {
+                    if (c.lect.zID == g_user.zID) {
                         return true;
                     }
                 }
@@ -1732,7 +1733,11 @@
         } 
     </script>
     <script>
-        var g_userID = 1;
+        var g_user = {
+            "name":"user1",
+            "zID": "u1",
+            "phapdanh":"phap danh 1",
+            };
 
         //chat
         function onSendChat() {
@@ -1751,7 +1756,7 @@
             //alert(znewMsg);
             var newMsg = JSON.parse(znewMsg);
             addLectItem(g_rootNode, newMsg);    //update tree
-            var tNode = g_titlesDict[newMsg.ID];
+            var tNode = g_titlesDict[newMsg.zID];
             var paragraphs = crtParagraphs(tNode);
             var tDiv = document.getElementById("id_content");
             appendPars(paragraphs, tDiv);
@@ -1759,12 +1764,12 @@
         function onChkClick(msgId) {
             var tnode = g_titlesDict[msgId];
             var msg = tnode.lect;
-            var isLiked = isTitleLiked(msg.ID);
+            var isLiked = isTitleLiked(msg.zID);
             var newMsg = {
                 "type": "like",
-                "content": g_userID.toString(),
+                "content": g_user.zID,
                 "path": msg.path,
-                "ID": msg.ID
+                "zID": msg.zID
             };
             if (isLiked) {
                 newMsg.type = "unlike";
@@ -1773,15 +1778,15 @@
         }
         function onUpdateMsgChkDone(zmsg) {
             var msg = JSON.parse(zmsg);
-            var chkId = "id_chk_" + msg.ID;
+            var chkId = "id_chk_" + msg.zID;
             var chk = document.getElementById(chkId);
             var u = {
                 "title": msg.title,
                 "path": msg.path + "/likes/" + msg.title,
                 "type": "user",
-                "ID": msg.content,
+                "zID": msg.content,
             };
-            var tnode = g_titlesDict[msgId];
+            var tnode = g_titlesDict[msg.zID];
             var t = tnode.lect;
             if (msg.type == "unlike") {
                 chk.textContent = g_impSrc.unlike;

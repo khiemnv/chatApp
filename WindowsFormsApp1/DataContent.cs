@@ -803,9 +803,11 @@ namespace WindowsFormsApp1
             var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
+                UInt64 gID = Convert.ToUInt64(reader["ID"]);
                 pathLst.Add(new MyTitle()
                 {
-                    ID = Convert.ToUInt64(reader["ID"]),
+                    ID = gID,
+                    zID = ConvId(gID,eTypeID.group),
                     path = Convert.ToString(reader["zPath"]),
                     title = Convert.ToString(reader["zName"]),
                     parentID = Convert.ToUInt64(reader["parentID"]),
@@ -861,8 +863,13 @@ namespace WindowsFormsApp1
         {
             var user = new MyUser();
             user.ID = Convert.ToUInt64(rd["ID"]);
+            user.zID = ConvId(user.ID, eTypeID.user);
             user.name = Convert.ToString(rd["zName"]);
             return user;
+        }
+        private MyUser getUserById(string zid)
+        {
+            return getUserById(ConvId(zid, eTypeID.user));
         }
         private MyUser getUserById(UInt64 id)
         {
@@ -901,6 +908,7 @@ namespace WindowsFormsApp1
                 MyTitle t = new MyTitle() {
                     type = "user",
                     ID = user.ID,
+                    zID = ConvId(user.ID, eTypeID.user),
                     title = user.name,
                     path = l.path + "/" + user.name
                 };
@@ -924,6 +932,7 @@ namespace WindowsFormsApp1
         {
             var title = new MyTitle();
             title.ID = Convert.ToUInt64(rd["ID"]);
+            title.zID = ConvId(title.ID, eTypeID.msg);
             title.title = Convert.ToString(rd["zTitle"])
                 .TrimEnd(new char[] { '\r', '\n', '\v' });
             title.groupID = Convert.ToUInt64(rd["groupID"]);
@@ -965,6 +974,10 @@ namespace WindowsFormsApp1
             return lst;
         }
 
+        public MyTitle getOneTitle(string zid)
+        {
+            return getOneTitle(ConvId(zid, eTypeID.msg));
+        }
         public MyTitle getOneTitle(UInt64 id)
         {
             OleDbConnection cnn = m_cnn;
@@ -1112,18 +1125,19 @@ namespace WindowsFormsApp1
             cmd2.Parameters["@ID"].Value = title.ID;
             n = cmd2.ExecuteNonQuery();
             title.type = "title";
+            title.zID = ConvId(title.ID, eTypeID.msg);
             return title;
         }
 
         public override MyTitle editTitle(MyTitle msg)
         {
-            UInt64 uID = Convert.ToUInt64(msg.content);
-            MyTitle t = getOneTitle(msg.ID);
+            string zuID = msg.content;
+            MyTitle t = getOneTitle(msg.zID);
             var arr = t.likes.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             bool bfound = false;
             foreach (var zid in arr)
             {
-                if (zid == msg.content)
+                if (Convert.ToUInt64(zid) == ConvId(zuID,eTypeID.user))
                 {
                     bfound = true;
                     break;
@@ -1138,27 +1152,92 @@ namespace WindowsFormsApp1
             else { 
                 if (msg.type == "like")
                 {
-                    likeTitle(t, uID);
+                    likeTitle(t, zuID);
                 }
                 else
                 {
-                    unlikeTitle(t, uID);
+                    unlikeTitle(t, zuID);
                 }
 
-                UInt64 id = Convert.ToUInt64(msg.content);
-                MyUser user = getUserById(id);
+                UInt64 uid = ConvId(zuID,eTypeID.user);
+                MyUser user = getUserById(uid);
                 MyTitle u = new MyTitle()
                 {
                     type = "user",
                     ID = user.ID,
+                    zID = ConvId(user.ID, eTypeID.user),
                     title = user.name,
                     path = msg.path + "/likes/" + user.name
                 };
                 return u;
             }
         }
-        private bool unlikeTitle(MyTitle t, UInt64 uID)
+
+        //private UInt64 ConvId(UInt64 rawID, eTypeID typeID)
+        //{
+        //    switch(typeID)
+        //    {
+        //        case eTypeID.user:
+        //            return rawID * 10 +1;
+        //        case eTypeID.msg:
+        //            return rawID * 10 +2;
+        //        case eTypeID.group:
+        //            return rawID * 10 +3;
+        //        case eTypeID.undo:
+        //            return rawID / 10;
+        //        default:
+        //            Debug.Assert(false);
+        //            return rawID;
+        //    }
+        //}
+        private UInt64 ConvId(string zID, eTypeID typeID)
         {
+            switch (typeID)
+            {
+                case eTypeID.user:
+                    Debug.Assert(zID.Substring(0,1) == "u");
+                    break;
+                case eTypeID.msg:
+                case eTypeID.group:
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
+            return Convert.ToUInt64(zID.Substring(1));
+        }
+        private String ConvId(UInt64 uID, eTypeID typeID)
+        {
+            string prefix = "";
+            switch (typeID)
+            {
+                case eTypeID.user:
+                    prefix = "u";
+                    break;
+                case eTypeID.msg:
+                    prefix = "m";
+                    break;
+                case eTypeID.group:
+                    prefix = "g";
+                    break;
+                default:
+                    Debug.Assert(false);
+                    break;
+            }
+            return prefix + uID.ToString();
+        }
+        enum eTypeID
+        {
+            user,
+            msg,
+            group,
+        }
+
+        private bool unlikeTitle(MyTitle t, string zuID)
+        {
+            UInt64 uID = ConvId(zuID, eTypeID.user);
+            UInt64 tID = ConvId(t.zID, eTypeID.msg);
+
             var arr = t.likes.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             string txt = "";
             foreach(var zid in arr)
@@ -1173,18 +1252,21 @@ namespace WindowsFormsApp1
             cmd2.Parameters.Add("@zLike", OleDbType.VarWChar);
             cmd2.Parameters["@zLike"].Value = txt;
             cmd2.Parameters.Add("@ID", OleDbType.Numeric);
-            cmd2.Parameters["@ID"].Value = t.ID;
+            cmd2.Parameters["@ID"].Value = tID;
             var n = cmd2.ExecuteNonQuery();
             return n != 0;
         }
-        private bool likeTitle(MyTitle t, UInt64 uID)
+        private bool likeTitle(MyTitle t, string zuID)
         {
+            UInt64 uID = ConvId(zuID, eTypeID.user);
+            UInt64 tID = ConvId(t.zID, eTypeID.msg);
+
             string qry2 = "UPDATE messages SET zLike = @zLike WHERE ID = @ID";
             var cmd2 = new OleDbCommand(qry2, m_cnn);
             cmd2.Parameters.Add("@zLike", OleDbType.VarWChar);
             cmd2.Parameters["@zLike"].Value = t.likes + "," + uID.ToString();
             cmd2.Parameters.Add("@ID", OleDbType.Numeric);
-            cmd2.Parameters["@ID"].Value = t.ID;
+            cmd2.Parameters["@ID"].Value = tID;
             var n = cmd2.ExecuteNonQuery();
             return n != 0;
         }

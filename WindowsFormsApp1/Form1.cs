@@ -305,12 +305,13 @@ namespace WindowsFormsApp1
                 var tnParent = m_nodeDict[msg.path + "/likes"];
                 var tnChild = m_nodeDict[u.path];
                 tnParent.childs.Remove(tnChild);
+                tnParent.tnode.Nodes.Remove(tnChild.tnode);
                 m_nodeDict.Remove(u.path);
             }
 
             if (u != null)
             {
-                msg.path = u.path;
+                //msg.path = u.path;
                 msg.title = u.title;
                 string jsTxt = TitleToJson(msg);
                 m_wb.Navigate("javascript:onUpdateMsgChkDone('" + jsTxt + "')");
@@ -1140,8 +1141,8 @@ namespace WindowsFormsApp1
     [DataContract(Name = "MyTitle")]
     public class MyTitle
     {
-        [DataMember(Name = "ID", EmitDefaultValue = false)]
-        public UInt64 ID;
+        [DataMember(Name = "zID", EmitDefaultValue = false)]
+        public string zID;
         [DataMember(Name = "title", EmitDefaultValue = false)]
         public string title;
         [DataMember(Name = "path", EmitDefaultValue = false)]
@@ -1149,10 +1150,12 @@ namespace WindowsFormsApp1
         [DataMember(Name = "content", EmitDefaultValue = false)]
         public string content;
         [DataMember(Name = "type", EmitDefaultValue = false)]
-        public string type; // [group/msg]
+        public string type; // [group/msg/user]
         [DataMember(Name = "likes", EmitDefaultValue = false)]
         public string likes;    //user1, user2, ...
 
+        //[DataMember(Name = "ID", EmitDefaultValue = false)]
+        public UInt64 ID;
         public UInt64 groupID;
         public string groupPath;
         public int ord;
@@ -1160,15 +1163,20 @@ namespace WindowsFormsApp1
         public Dictionary<UInt64, MyTitle> childs;
     }
 
-    [DataContract(Name = "MyUser")]
+    //[DataContract(Name = "MyUser")]
     public class MyUser
     {
-        [DataMember(Name = "ID", EmitDefaultValue = false)]
-        public UInt64 ID;
+        [DataMember(Name = "zID", EmitDefaultValue = false)]
+        public string zID;
         [DataMember(Name = "name", EmitDefaultValue = false)]
         public string name;
         [DataMember(Name = "phapdanh", EmitDefaultValue = false)]
         public string phapdanh;
+        public UInt64 ID;
+    }
+    public class MyMessage : MyTitle
+    {
+
     }
 
 
