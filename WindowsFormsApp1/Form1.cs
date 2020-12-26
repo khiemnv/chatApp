@@ -253,6 +253,7 @@ namespace WindowsFormsApp1
             }
 
             m_wb.AddMessageEventListener("addNewMsg", OnaddNewMsg);
+            m_wb.AddMessageEventListener("addLikeMsg", OnaddLikeMsg);
         }
 
         //req addNewMsg(newMsg)
@@ -279,6 +280,41 @@ namespace WindowsFormsApp1
             //update wb
             string jsTxt = TitleToJson(newObj);
             m_wb.Navigate("javascript:onSendChatDone('" + jsTxt + "')");
+        }
+        //req addLikeMsg(msg)
+        private void OnaddLikeMsg(string obj)
+        {
+            MyTitle msg = new MyTitle();
+            msg = JsonToTitle(obj);
+            MyTitle u = m_content.editTitle(msg);
+            if (u == null) {
+            }
+            else if (msg.type == "like")
+            {
+                //update tree
+                var tnChild = new Node() { id = u.path, name = u.title, title = u };
+                m_nodeDict.Add(u.path, tnChild);
+
+                var tnParent = m_nodeDict[msg.path + "/likes"];
+                tnParent.childs.Add(tnChild);
+                updateTree(tnParent, tnChild);
+            }
+            else if (msg.type == "unlike")
+            {
+                //update tree
+                var tnParent = m_nodeDict[msg.path + "/likes"];
+                var tnChild = m_nodeDict[u.path];
+                tnParent.childs.Remove(tnChild);
+                m_nodeDict.Remove(u.path);
+            }
+
+            if (u != null)
+            {
+                msg.path = u.path;
+                msg.title = u.title;
+                string jsTxt = TitleToJson(msg);
+                m_wb.Navigate("javascript:onUpdateMsgChkDone('" + jsTxt + "')");
+            }
         }
 
         void UpdateFormName()

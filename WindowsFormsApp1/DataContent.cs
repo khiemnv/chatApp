@@ -665,6 +665,10 @@ namespace WindowsFormsApp1
         {
             throw new NotImplementedException();
         }
+        public virtual MyTitle editTitle(MyTitle msg)
+        {
+            throw new NotImplementedException();
+        }
         #region dispose
         // Dispose() calls Dispose(true)  
         public void Dispose()
@@ -698,6 +702,7 @@ namespace WindowsFormsApp1
             //m_dataSyncs.Clear();
             //m_dataContents.Clear();
         }
+
         #endregion
     }
     public class lOleDbContentProvider : lContentProvider
@@ -894,9 +899,11 @@ namespace WindowsFormsApp1
                     m_userDict.Add(user.ID, user);
                 }
                 MyTitle t = new MyTitle() {
-                type = "user",
-                title = user.name,
-                path = l.path + "/" + user.name};
+                    type = "user",
+                    ID = user.ID,
+                    title = user.name,
+                    path = l.path + "/" + user.name
+                };
                 lst.Add(t);
             }
             return lst;
@@ -1106,6 +1113,80 @@ namespace WindowsFormsApp1
             n = cmd2.ExecuteNonQuery();
             title.type = "title";
             return title;
+        }
+
+        public override MyTitle editTitle(MyTitle msg)
+        {
+            UInt64 uID = Convert.ToUInt64(msg.content);
+            MyTitle t = getOneTitle(msg.ID);
+            var arr = t.likes.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            bool bfound = false;
+            foreach (var zid in arr)
+            {
+                if (zid == msg.content)
+                {
+                    bfound = true;
+                    break;
+                }
+            }
+            if ((!bfound && msg.type == "unlike")
+                 || (bfound && msg.type == "like"))
+            {
+                //do nothing
+                return null;
+            }
+            else { 
+                if (msg.type == "like")
+                {
+                    likeTitle(t, uID);
+                }
+                else
+                {
+                    unlikeTitle(t, uID);
+                }
+
+                UInt64 id = Convert.ToUInt64(msg.content);
+                MyUser user = getUserById(id);
+                MyTitle u = new MyTitle()
+                {
+                    type = "user",
+                    ID = user.ID,
+                    title = user.name,
+                    path = msg.path + "/likes/" + user.name
+                };
+                return u;
+            }
+        }
+        private bool unlikeTitle(MyTitle t, UInt64 uID)
+        {
+            var arr = t.likes.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            string txt = "";
+            foreach(var zid in arr)
+            {
+                if (Convert.ToUInt64( zid) != uID)
+                {
+                    txt += "," + zid;
+                }
+            }
+            string qry2 = "UPDATE messages SET zLike = @zLike WHERE ID = @ID";
+            var cmd2 = new OleDbCommand(qry2, m_cnn);
+            cmd2.Parameters.Add("@zLike", OleDbType.VarWChar);
+            cmd2.Parameters["@zLike"].Value = txt;
+            cmd2.Parameters.Add("@ID", OleDbType.Numeric);
+            cmd2.Parameters["@ID"].Value = t.ID;
+            var n = cmd2.ExecuteNonQuery();
+            return n != 0;
+        }
+        private bool likeTitle(MyTitle t, UInt64 uID)
+        {
+            string qry2 = "UPDATE messages SET zLike = @zLike WHERE ID = @ID";
+            var cmd2 = new OleDbCommand(qry2, m_cnn);
+            cmd2.Parameters.Add("@zLike", OleDbType.VarWChar);
+            cmd2.Parameters["@zLike"].Value = t.likes + "," + uID.ToString();
+            cmd2.Parameters.Add("@ID", OleDbType.Numeric);
+            cmd2.Parameters["@ID"].Value = t.ID;
+            var n = cmd2.ExecuteNonQuery();
+            return n != 0;
         }
 
         #region dispose

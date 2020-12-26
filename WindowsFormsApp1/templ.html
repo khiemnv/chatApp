@@ -321,6 +321,8 @@
             "checked": "■",
             "uncheck": "□",
             "gray": "▣",
+            "like": "☑",
+            "unlike": "☐",
         };
     </script>
     <script>
@@ -458,6 +460,20 @@
             }
         }
 
+        function rmLectItem(root, lectItem) {
+            var path = lectItem.path.split('/');
+            var parent;
+            var child = root;
+            for (var i in path) {
+                parent = child;
+                var name = path[i];
+                child = parent.childs[name];
+            }
+            var e = document.getElementById(parent.id + "_childs");
+            e.removeChild(document.getElementById(child.id + "_label"));
+            e.removeChild(document.getElementById(child.id + "_childs"));
+        }
+
         function treeRender(rootNode) {
             document.getElementById(rootNode.id + "_childs").innerHTML = "";
             rootNode.visible = true;
@@ -510,6 +526,7 @@
             span1.onclick = function () { onSpanClick(childNode.id) };
 
             var div1 = document.createElement("div");
+            div1.id = childNode.id + "_label";
             div1.className = "menuItem";
             //var span11 = document.createElement("span");
             //span11.appendChild(img1);
@@ -862,11 +879,41 @@
         function addCheckBox(el,par) {
             var chk = el.appendChild(document.createElement("button"));
             chk.id = "id_chk_" + par.ID;
-            chk.textContent = "☐";
+            chk.textContent = g_impSrc.unlike;
+            if (isTitleLiked(par.ID)) {
+                chk.textContent = g_impSrc.like;
+            }
             chk.className = "miChkBtn";
             chk.onclick = function () { onChkClick(par.ID) };
         }
 
+        //when load
+        function isTitleLiked2(id) {
+            var tnode = g_titlesDict[id];
+            var msg = tnode.lect;
+            var arr = msg.likes.split(",");
+            for (var i in arr) {
+                if (parseInt(arr[i]) == g_userID) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //when load complete
+        function isTitleLiked(titleID) {
+            var tnode = g_titlesDict[titleID];
+            if (tnode.lect.type == "title") {
+                var l = tnode.childs["likes"];
+                for (var i in l.childs) {
+                    var c = l.childs[i];
+                    if (c.lect.ID == g_userID) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
     </script>
     <script>
@@ -1685,6 +1732,8 @@
         } 
     </script>
     <script>
+        var g_userID = 1;
+
         //chat
         function onSendChat() {
             var ta = document.getElementById("id_chatEdt");
@@ -1710,14 +1759,37 @@
         function onChkClick(msgId) {
             var tnode = g_titlesDict[msgId];
             var msg = tnode.lect;
-            var chkId = "id_chk_" + msg.ID;
-            req_updateMsgChk(msg);
+            var isLiked = isTitleLiked(msg.ID);
+            var newMsg = {
+                "type": "like",
+                "content": g_userID.toString(),
+                "path": msg.path,
+                "ID": msg.ID
+            };
+            if (isLiked) {
+                newMsg.type = "unlike";
+            }
+            req_addLikeMsg(newMsg);
         }
         function onUpdateMsgChkDone(zmsg) {
             var msg = JSON.parse(zmsg);
             var chkId = "id_chk_" + msg.ID;
             var chk = document.getElementById(chkId);
-            chk.textContent = "☑";
+            var u = {
+                "title": msg.title,
+                "path": msg.path + "/likes/" + msg.title,
+                "type": "user",
+                "ID": msg.content,
+            };
+            var tnode = g_titlesDict[msgId];
+            var t = tnode.lect;
+            if (msg.type == "unlike") {
+                chk.textContent = g_impSrc.unlike;
+                rmLectItem(g_rootNode, u);    //update tree
+            } else {
+                chk.textContent = g_impSrc.like;
+                addLectItem(g_rootNode, u);    //update tree
+            }
         }
     </script>
 
@@ -1729,10 +1801,10 @@
             var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
             document.dispatchEvent(event);
         }
-        function req_updateMsgChk(msg) {
+        function req_addLikeMsg(msg) {
             //onUpdateMsgChkDone(JSON.stringify(msg));
-            var fname = "addNewMsg";
-            var parameter = JSON.striLingify(msg);
+            var fname = "addLikeMsg";
+            var parameter = JSON.stringify(msg);
             var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
             document.dispatchEvent(event);
         }
