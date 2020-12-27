@@ -1151,9 +1151,9 @@ namespace WindowsFormsApp1
         public string content;
         [DataMember(Name = "type", EmitDefaultValue = false)]
         public string type; // [group/msg/user]
-        [DataMember(Name = "likes", EmitDefaultValue = false)]
-        public string likes;    //user1, user2, ...
 
+        //[DataMember(Name = "likes", EmitDefaultValue = false)]
+        public string likes;    //user1, user2, ...
         //[DataMember(Name = "ID", EmitDefaultValue = false)]
         public UInt64 ID;
         public UInt64 groupID;

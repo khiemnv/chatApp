@@ -321,7 +321,7 @@
             "checked": "■",
             "uncheck": "□",
             "gray": "▣",
-            "like": "☑",
+            "like": "👍",
             "unlike": "☐",
         };
     </script>
@@ -505,7 +505,7 @@
             img1.id = childNode.id + "_img";
             img1.className = "miImgBtn";
             img1.textContent = g_impSrc.colapse;
-            if (childNode.childs == null) { img1.textContent = g_impSrc.noop };
+            //if (childNode.childs == null) { img1.textContent = g_impSrc.noop };
             img1.onclick = function () { onImgClick(childNode.id) };
 
             //var stsTxt = '<img id="[nodeId]_sts" class="stsImg" src="[stsSrc]" onclick="onStsClick(' + "'[nodeId]'" + ')"></img>';
@@ -557,6 +557,30 @@
             //tDiv.innerHTML += imgTxt + stsTxt + spanTxt + divTxt;
             tDiv.appendChild(div1);
             tDiv.appendChild(div2);
+        }
+
+        //NOTE: g_rootNode ignore
+        function showHideCollapsed(tNode) {
+            var img1 = document.getElementById(tNode.id + "_img");
+            if ((tNode.childs == null) || (Object.keys(tNode.childs).length == 0)) {
+                img1.textContent = g_impSrc.noop;
+            } else {
+                if (img1 == null) {
+                    //root node
+                }
+                else {
+                    if (tNode.visible) {
+                        img1.textContent = g_impSrc.colapse;
+                    } else {
+                        img1.textContent = g_impSrc.expand;
+                    }
+
+                }
+                for (var i in tNode.childs) {
+                    var childNode = tNode.childs[i];
+                    showHideCollapsed(childNode);
+                }
+            }
         }
         function updateChildSts(tNode) {
             var childs = tNode.childs;
@@ -1760,6 +1784,9 @@
             var paragraphs = crtParagraphs(tNode);
             var tDiv = document.getElementById("id_content");
             appendPars(paragraphs, tDiv);
+
+            var ta = document.getElementById("id_chatEdt");
+            ta.value = "";
         }
         function onChkClick(msgId) {
             var tnode = g_titlesDict[msgId];
@@ -1795,6 +1822,9 @@
                 chk.textContent = g_impSrc.like;
                 addLectItem(g_rootNode, u);    //update tree
             }
+
+            var l = tnode.childs["likes"];
+            showHideCollapsed(l);
         }
     </script>
 
@@ -1832,7 +1862,7 @@
         adjCssStyle(g_isAndroid);
 
         render1(g_lectLst); //render tree
-
+        showHideCollapsed(g_rootNode);
         //updateSutraTitle();
 
         adjFont(g_ratio);
