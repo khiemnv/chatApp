@@ -669,6 +669,11 @@ namespace WindowsFormsApp1
         {
             throw new NotImplementedException();
         }
+
+        public virtual List<MyTitle> getPrograms()
+        {
+            throw new NotImplementedException();
+        }
         #region dispose
         // Dispose() calls Dispose(true)  
         public void Dispose()
@@ -702,6 +707,7 @@ namespace WindowsFormsApp1
             //m_dataSyncs.Clear();
             //m_dataContents.Clear();
         }
+
 
         #endregion
     }
@@ -1220,6 +1226,12 @@ namespace WindowsFormsApp1
                 case eTypeID.group:
                     prefix = "g";
                     break;
+                case eTypeID.program:
+                    prefix = "p";
+                    break;
+                case eTypeID.prog_reg:
+                    prefix = "r";
+                    break;
                 default:
                     Debug.Assert(false);
                     break;
@@ -1231,6 +1243,9 @@ namespace WindowsFormsApp1
             user,
             msg,
             group,
+            program,
+            prog_reg,   //program register
+            prog_opt,   //program option
         }
 
         private bool unlikeTitle(MyTitle t, string zuID)
@@ -1269,6 +1284,117 @@ namespace WindowsFormsApp1
             cmd2.Parameters["@ID"].Value = tID;
             var n = cmd2.ExecuteNonQuery();
             return n != 0;
+        }
+
+        public override List<MyTitle> getPrograms()
+        {
+            OleDbConnection cnn = m_cnn;
+            var lst = new List<MyTitle>();
+
+            //get paths
+            var progLst = new List<MyTitle>();
+            var qry = "select * from programs";
+            var cmd = new OleDbCommand(qry, cnn);
+            var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                UInt64 progID = Convert.ToUInt64(reader["ID"]);
+                var tProg = new MyTitle()
+                {
+                    ID = progID,
+                    zID = ConvId(progID, eTypeID.program),
+                    title = Convert.ToString(reader["zTitle"]),
+                    content = Convert.ToString(reader["zContent"]),
+                    type = "program",
+                    childs = new Dictionary<ulong, MyTitle>()
+                };
+                tProg.path = Convert.ToString(reader["zPath"]) + "/" + tProg.title;
+                progLst.Add(tProg);
+
+                var zOpt = Convert.ToString(reader["zOpt"]);
+                var arrOpt = zOpt.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                for (var iOpt = 0;iOpt< arrOpt.Length;iOpt++)
+                {
+                    var tOpt = new MyTitle()
+                    {
+                        zID = tProg.zID + "_opt" + iOpt.ToString(),
+                        title = arrOpt[iOpt],
+                        content = arrOpt[iOpt],
+                        path = tProg.path + "/" + arrOpt[iOpt],
+                        type = eTypeID.prog_opt.ToString(),
+                    };
+                    progLst.Add(tOpt);
+                    tProg.childs.Add((UInt64)iOpt +1, tOpt);
+                }
+            }
+            reader.Close();
+
+            //add to lst
+            lst.AddRange(progLst);
+
+            //get title
+            var qry2 = "select * from program_registers WHERE programID = @programID";
+            var cmd2 = new OleDbCommand(qry2, cnn);
+            cmd2.Parameters.Add("@programID", OleDbType.Integer);
+
+            var tDict = new Dictionary<UInt64, MyUser>();
+            foreach (var program in progLst)
+            {
+                var regLst = new List<MyTitle>();
+                cmd2.Parameters[0].Value = program.ID;
+                var reader2 = cmd2.ExecuteReader();
+                while (reader2.Read())
+                {
+                    var regID = Convert.ToUInt64(reader2["ID"]);
+                    var title = new MyTitle()
+                    {
+                        ID = regID,
+                        zID = ConvId(regID, eTypeID.prog_reg),
+                        path = Convert.ToString(reader2["registerOption"]),
+                        title = Convert.ToString(reader2["userID"]),
+                        content = Convert.ToString(reader2["zContent"]),
+                        type = "register",
+                        childs = new Dictionary<ulong, MyTitle>()
+                    };
+                    regLst.Add(title);
+                }
+                reader2.Close();
+
+                //resolve path: user info
+                foreach(var reg in regLst) {
+                    resolveRegPath(program,reg, tDict);
+                }
+
+                //add to lst
+                lst.AddRange(regLst);
+            }
+
+            return lst;
+        }
+
+        void resolveRegPath(MyTitle program, MyTitle reg, Dictionary<UInt64, MyUser> tDict)
+        {
+            UInt64 optIdx = Convert.ToUInt64(reg.path);
+            UInt64 uID = Convert.ToUInt64(reg.title);
+            MyUser tUser;
+            if (!tDict.ContainsKey(uID))
+            {
+                tUser = getUserById(uID);
+                tDict.Add(uID, tUser);
+            }
+            else
+            {
+                tUser = tDict[uID];
+            }
+
+            Regex ex = new Regex("^\\d+");
+            
+            string zTitle = ex.Replace(reg.content, tUser.name);
+            string zPath = program.childs[optIdx].path + "/" + zTitle;
+            string zContent = tUser.zID + " " + reg.content;
+            reg.path = zPath;
+            reg.title = zTitle;
+            reg.content = zContent;
         }
 
         #region dispose
