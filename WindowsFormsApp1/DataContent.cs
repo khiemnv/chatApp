@@ -1135,7 +1135,21 @@ namespace WindowsFormsApp1
             return title;
         }
 
+
         public override MyTitle editTitle(MyTitle msg)
+        {
+            switch(msg.type)
+            {
+                case "register":
+                case "unregister":
+                    return editProgReg(msg);
+                case "like":
+                case "unlike":
+                    return editLike(msg);
+            }
+            return null;
+        }
+        private MyTitle editLike(MyTitle msg)
         {
             string zuID = msg.content;
             MyTitle t = getOneTitle(msg.zID);
@@ -1143,7 +1157,7 @@ namespace WindowsFormsApp1
             bool bfound = false;
             foreach (var zid in arr)
             {
-                if (Convert.ToUInt64(zid) == ConvId(zuID,eTypeID.user))
+                if (Convert.ToUInt64(zid) == ConvId(zuID, eTypeID.user))
                 {
                     bfound = true;
                     break;
@@ -1155,7 +1169,8 @@ namespace WindowsFormsApp1
                 //do nothing
                 return null;
             }
-            else { 
+            else
+            {
                 if (msg.type == "like")
                 {
                     likeTitle(t, zuID);
@@ -1165,7 +1180,7 @@ namespace WindowsFormsApp1
                     unlikeTitle(t, zuID);
                 }
 
-                UInt64 uid = ConvId(zuID,eTypeID.user);
+                UInt64 uid = ConvId(zuID, eTypeID.user);
                 MyUser user = getUserById(uid);
                 MyTitle u = new MyTitle()
                 {
@@ -1177,6 +1192,108 @@ namespace WindowsFormsApp1
                 };
                 return u;
             }
+        }
+        private MyTitle editProgReg(MyTitle msg)
+        {
+            var arr = msg.content.Split(new char[] { ' ' },StringSplitOptions.RemoveEmptyEntries);
+            string zpID = arr[0];
+            string zuID = arr[1];
+
+            //verify reg in db
+            OleDbConnection cnn = m_cnn;
+            var qry = "SELECT * FROM program_registers WHERE userID = @userID AND programID = @progID";
+            var cmd = new OleDbCommand(qry, cnn);
+            cmd.Parameters.Add("@userID", OleDbType.Numeric);
+            cmd.Parameters.Add("@progID", OleDbType.Numeric);
+            cmd.Parameters["@userID"].Value = ConvId(zuID, eTypeID.user);
+            cmd.Parameters["@progID"].Value = ConvId(zpID, eTypeID.program);
+            var reader = cmd.ExecuteReader();
+
+            UInt64 rID;
+            //add new/update
+            if (msg.type == "register")
+            {
+                if (reader.Read())
+                {
+                    rID = Convert.ToUInt64(reader["ID"].ToString());
+                    updateProgReg(rID, msg.content);
+                }
+                else
+                {
+                    newProgReg(out rID, msg.content);
+                    msg.ID = rID;
+                    msg.zID = ConvId(rID, eTypeID.prog_reg);
+                }
+            }
+            else
+            {
+                if (reader.Read())
+                {
+                    rID = Convert.ToUInt64(reader["ID"].ToString());
+                    delProgReg(rID);
+                }
+            }
+            reader.Close();
+            return msg;
+        }
+        private void updateProgReg(UInt64 rID, string content)
+        {
+            UInt64 pID;
+            UInt64 uID;
+            UInt64 optIdx;
+            string zcontent = parseRegMsg(content, out pID, out uID, out optIdx);
+            OleDbConnection cnn = m_cnn;
+            var qry = "UPDATE program_registers SET registerOption = @optIdx, zContent = @content WHERE ID = @ID";
+            var cmd = new OleDbCommand(qry, cnn);
+            cmd.Parameters.Add("@optIdx", OleDbType.Numeric);
+            cmd.Parameters.Add("@content", OleDbType.VarChar);
+            cmd.Parameters.Add("@ID", OleDbType.Numeric);
+            cmd.Parameters["@optIdx"].Value = Convert.ToInt32(optIdx);
+            cmd.Parameters["@content"].Value = zcontent;
+            cmd.Parameters["@ID"].Value = rID;
+            var n = cmd.ExecuteNonQuery();
+        }
+        private void newProgReg(out UInt64 rID, string content)
+        {
+            UInt64 pID;
+            UInt64 uID;
+            UInt64 optIdx;
+            string zcontent = parseRegMsg(content, out pID, out uID, out optIdx);
+            OleDbConnection cnn = m_cnn;
+            var qry = "INSERT INTO program_registers (userID, programID, zContent, registerOPtion) "
+                + "VALUES(@userID, @programID, @zContent, @registerOPtion)";
+            var cmd = new OleDbCommand(qry, cnn);
+            cmd.Parameters.Add("@userID", OleDbType.Numeric);
+            cmd.Parameters.Add("@programID", OleDbType.Numeric);
+            cmd.Parameters.Add("@zContent", OleDbType.VarChar);
+            cmd.Parameters.Add("@registerOPtion", OleDbType.Numeric);
+            cmd.Parameters["@userID"].Value = uID;
+            cmd.Parameters["@programID"].Value = pID;
+            cmd.Parameters["@zContent"].Value = zcontent;
+            cmd.Parameters["@registerOPtion"].Value = optIdx;
+            var n = cmd.ExecuteNonQuery();
+            cmd.CommandText = "Select @@Identity";
+            var id = cmd.ExecuteScalar();
+            rID = Convert.ToUInt64(id);
+        }
+        private void delProgReg(UInt64 rID)
+        {
+            OleDbConnection cnn = m_cnn;
+            var qry = "DELETE FROM program_registers WHERE ID = @ID";
+            var cmd = new OleDbCommand(qry, cnn);
+            cmd.Parameters.Add("@ID", OleDbType.Numeric);
+            cmd.Parameters[0].Value =rID;
+            var n = cmd.ExecuteNonQuery();
+        }
+        private string parseRegMsg(string rawContent, out UInt64 pID, out UInt64 uID, out UInt64 optIdx)
+        {
+            Regex exp = new Regex("^p(\\d+) u(\\d+) (\\d+)");
+            string zcontent = exp.Replace(rawContent, "$3");
+            var m = exp.Match(rawContent);
+            pID = Convert.ToUInt64( m.Groups[1].Value);
+            uID = Convert.ToUInt64(m.Groups[2].Value);
+            optIdx = Convert.ToUInt64(m.Groups[3].Value);
+            return zcontent;
         }
 
         //private UInt64 ConvId(UInt64 rawID, eTypeID typeID)
@@ -1205,6 +1322,8 @@ namespace WindowsFormsApp1
                     break;
                 case eTypeID.msg:
                 case eTypeID.group:
+                case eTypeID.program:
+                case eTypeID.prog_reg:
                     break;
                 default:
                     Debug.Assert(false);
@@ -1391,7 +1510,7 @@ namespace WindowsFormsApp1
             
             string zTitle = ex.Replace(reg.content, tUser.name);
             string zPath = program.childs[optIdx].path + "/" + zTitle;
-            string zContent = tUser.zID + " " + reg.content;
+            string zContent = program.zID + " " + tUser.zID + " " + reg.content;
             reg.path = zPath;
             reg.title = zTitle;
             reg.content = zContent;

@@ -977,7 +977,7 @@
                 for (var i in l) {
                     var c = l[i].lect;
                     var arr = c.content.split(" ");
-                    var zuID = arr[0];
+                    var zuID = arr[1];
                     if (zuID == g_user.zID) {
                         return true;
                     }
@@ -1927,24 +1927,24 @@
     <script>
         //program
         function registerProg() {
-            var curTitle = g_curTitle;
+            var tProg = g_curTitle;
             var ta = document.getElementById("id_chatEdt");
             var zOpt = ta.value;
             var reg = {
                 "type": "register",
-                "content": g_user.zID + " " + zOpt,
-                "zID": curTitle.zID,
-                "path": curTitle.path
+                "content": tProg.zID + " " + g_user.zID + " " + zOpt,
+                "zID": "rxxx",
+                "path": tProg.path
             };
             var arr = zOpt.split(" ");
-            var optzID = mkOptzID(curTitle.zID, arr[0]);
+            var optzID = mkOptzID(tProg.zID, arr[0]);
             if (isOptRegistered(optzID)) {
                 reg.type = "unregister";
             }
             req_addNewProgReg(reg);
         }
         function req_addNewProgReg(newReg) {
-            if (1) {
+            if (0) {
                 onAddNewProgRegDone(JSON.stringify(newReg));
             } else {
                 var fname = "addProgReg";
@@ -1955,20 +1955,20 @@
         }
         function onAddNewProgRegDone(zreg) {
             var reg = JSON.parse(zreg);
-            var progNode = g_titlesDict[reg.zID];   //program
+            var arr = reg.content.split(" ");   //<prog.zID> <user.zID> <opt idx>
+            var progzID = arr[0];
+            var progNode = g_titlesDict[progzID];   //program
             var tProg = progNode.lect;
-            var arr = reg.content.split(" ");
-            var optzIdx = mkOptzID(tProg.zID, arr[1]);
+            var optzIdx = mkOptzID(tProg.zID, arr[2]);
             var optNode = g_titlesDict[optzIdx];
             var tOpt = optNode.lect;
-            var zopt = reg.content.substr(arr[0].length+1);
-            reg.title = zopt.replace(/^\d+/, g_user.name);
+            reg.title = reg.content.replace(/^p\d+ u\d+ \d+/, g_user.name);
             var u = {
                 "title": reg.title,
                 "path": tOpt.path + "/" + reg.title,
                 "type": "register",
                 "content": reg.content,
-                "zID": "rxxx",
+                "zID": reg.zID,
             };
             if (reg.type == "unregister") {
                 rmLectItem(g_rootNode, u);    //update tree

@@ -254,6 +254,7 @@ namespace WindowsFormsApp1
 
             m_wb.AddMessageEventListener("addNewMsg", OnaddNewMsg);
             m_wb.AddMessageEventListener("addLikeMsg", OnaddLikeMsg);
+            m_wb.AddMessageEventListener("addProgReg", OnaddProgReg);
         }
 
         //req addNewMsg(newMsg)
@@ -315,6 +316,21 @@ namespace WindowsFormsApp1
                 msg.title = u.title;
                 string jsTxt = TitleToJson(msg);
                 m_wb.Navigate("javascript:onUpdateMsgChkDone('" + jsTxt + "')");
+            }
+        }
+
+        //req addProgReg(msg)
+        private void OnaddProgReg(string obj)
+        {
+            MyTitle msg = new MyTitle();
+            msg = JsonToTitle(obj);
+            MyTitle u = m_content.editTitle(msg);
+            if (u != null)
+            {
+                //msg.path = u.path;
+                msg.title = u.title;
+                string jsTxt = TitleToJson(msg);
+                m_wb.Navigate("javascript:onAddNewProgRegDone('" + jsTxt + "')");
             }
         }
 
