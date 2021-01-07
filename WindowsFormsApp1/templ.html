@@ -934,7 +934,7 @@
             var chk = el.appendChild(document.createElement("button"));
             chk.id = "id_chk_" + par.zID;
             chk.textContent = g_impSrc.unlike;
-            if (isOptRegisterd(par.zID)) {
+            if (isOptRegistered(par.zID)) {
                 chk.textContent = g_impSrc.like;
             }
             chk.className = "miChkBtn";
@@ -970,7 +970,7 @@
         }
 
         //when load complete
-        function isOptRegisterd(optID) {
+        function isOptRegistered(optID) {
             var tnode = g_titlesDict[optID];
             if (tnode.lect.type == "prog_opt") {
                 var l = tnode.childs;
@@ -1811,9 +1811,20 @@
 
         //chat
         function onSendChat() {
+            var curTitle = g_curTitle;
+            switch (curTitle.type) {
+                case "program":
+                    registerProg();
+                    break;
+                default:
+                    addNewMsg();
+                    break;
+            }
+        }
+        function addNewMsg() {
+            var curTitle = g_curTitle;
             var ta = document.getElementById("id_chatEdt");
             var msgTxt = ta.value;
-            var curTitle = g_curTitle;
             var path = curTitle.path;
             var newMsg = {
                 "content": msgTxt,
@@ -1913,7 +1924,82 @@
             showHideCollapsed(l);
         }
     </script>
+    <script>
+        //program
+        function registerProg() {
+            var curTitle = g_curTitle;
+            var ta = document.getElementById("id_chatEdt");
+            var zOpt = ta.value;
+            var reg = {
+                "type": "register",
+                "content": g_user.zID + " " + zOpt,
+                "zID": curTitle.zID,
+                "path": curTitle.path
+            };
+            var arr = zOpt.split(" ");
+            var optzID = mkOptzID(curTitle.zID, arr[0]);
+            if (isOptRegistered(optzID)) {
+                reg.type = "unregister";
+            }
+            req_addNewProgReg(reg);
+        }
+        function req_addNewProgReg(newReg) {
+            if (1) {
+                onAddNewProgRegDone(JSON.stringify(newReg));
+            } else {
+                var fname = "addProgReg";
+                var parameter = JSON.stringify(newReg);
+                var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+                document.dispatchEvent(event);
+            }
+        }
+        function onAddNewProgRegDone(zreg) {
+            var reg = JSON.parse(zreg);
+            var progNode = g_titlesDict[reg.zID];   //program
+            var tProg = progNode.lect;
+            var arr = reg.content.split(" ");
+            var optzIdx = mkOptzID(tProg.zID, arr[1]);
+            var optNode = g_titlesDict[optzIdx];
+            var tOpt = optNode.lect;
+            var zopt = reg.content.substr(arr[0].length+1);
+            reg.title = zopt.replace(/^\d+/, g_user.name);
+            var u = {
+                "title": reg.title,
+                "path": tOpt.path + "/" + reg.title,
+                "type": "register",
+                "content": reg.content,
+                "zID": "rxxx",
+            };
+            if (reg.type == "unregister") {
+                rmLectItem(g_rootNode, u);    //update tree
+            } else {
+                addLectItem(g_rootNode, u);    //update tree
+            }
 
+            showHideCollapsed(optNode);
+
+            var chkBox = getChkBoxEl(tOpt.zID);
+            if (isOptRegistered(tOpt.zID)) {
+                chkBox.textContent = g_impSrc.like;
+            } else {
+                chkBox.textContent = g_impSrc.unlike;
+            }
+        }
+    </script>
+    <script>
+        //converter
+        function getChkBoxEl(optzID) {
+            var el = document.getElementById("id_chk_" + optzID);
+            return el;
+        }
+        function mkChkBoxID(optzID) {
+            return "id_chk_" + optzID;
+        }
+        function mkOptzID(progzID, optzIdx) {
+            var optzID = progzID + "_opt" + (parseInt(optzIdx) - 1).toString();
+            return optzID;
+        }
+    </script>
     <script>
         //db
         function req_addNewMsg(newMsg) {
@@ -1923,11 +2009,15 @@
             document.dispatchEvent(event);
         }
         function req_addLikeMsg(msg) {
-            //onUpdateMsgChkDone(JSON.stringify(msg));
-            var fname = "addLikeMsg";
-            var parameter = JSON.stringify(msg);
-            var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
-            document.dispatchEvent(event);
+            if (0) {
+                msg.title = "user1"
+                onUpdateMsgChkDone(JSON.stringify(msg));
+            } else {
+                var fname = "addLikeMsg";
+                var parameter = JSON.stringify(msg);
+                var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+                document.dispatchEvent(event);
+            }
         }
 
     </script>
