@@ -1436,7 +1436,7 @@ namespace WindowsFormsApp1
                 {
                     var tOpt = new MyTitle()
                     {
-                        zID = tProg.zID + "_opt" + iOpt.ToString(),
+                        zID = tProg.zID + "_opt" + (iOpt+1).ToString(),
                         title = arrOpt[iOpt],
                         content = arrOpt[iOpt],
                         path = tProg.path + "/" + arrOpt[iOpt],

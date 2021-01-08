@@ -979,11 +979,11 @@
                     var arr = c.content.split(" ");
                     var zuID = arr[1];
                     if (zuID == g_user.zID) {
-                        return true;
+                        return c;
                     }
                 }
             }
-            return false;
+            return null;
         }
 
     </script>
@@ -1884,52 +1884,23 @@
             showHideCollapsed(l);
         }
 
-        //option
-        function onOptClick(msgId) {
-            var tnode = g_titlesDict[msgId];
-            var msg = tnode.lect;
-            var isLiked = isTitleLiked(msg.zID);
-            var newMsg = {
-                "type": "like",
-                "content": g_user.zID,
-                "path": msg.path,
-                "zID": msg.zID
-            };
-            if (isLiked) {
-                newMsg.type = "unlike";
-            }
-            req_addLikeMsg(newMsg);
-        }
-        function onUpdateOpt(zmsg) {
-            var msg = JSON.parse(zmsg);
-            var chkId = "id_chk_" + msg.zID;
-            var chk = document.getElementById(chkId);
-            var u = {
-                "title": msg.title,
-                "path": msg.path + "/likes/" + msg.title,
-                "type": "user",
-                "zID": msg.content,
-            };
-            var tnode = g_titlesDict[msg.zID];
-            var t = tnode.lect;
-            if (msg.type == "unlike") {
-                chk.textContent = g_impSrc.unlike;
-                rmLectItem(g_rootNode, u);    //update tree
-            } else {
-                chk.textContent = g_impSrc.like;
-                addLectItem(g_rootNode, u);    //update tree
-            }
-
-            var l = tnode.childs["likes"];
-            showHideCollapsed(l);
-        }
     </script>
     <script>
         //program
+        //option toggle event
+        function onOptClick(msgId) {
+            var tnode = g_titlesDict[msgId];
+            var opt = tnode.lect;
+            var zIdx = opt.zID.replace(/p\d+_opt/, "");
+            toggleProgReg(zIdx);
+        }
         function registerProg() {
-            var tProg = g_curTitle;
             var ta = document.getElementById("id_chatEdt");
-            var zOpt = ta.value;
+            var zOpt = ta.value.replace(/\//g,"-");
+            toggleProgReg(zOpt);
+        }
+        function toggleProgReg(zOpt) {
+            var tProg = g_curTitle;
             var reg = {
                 "type": "register",
                 "content": tProg.zID + " " + g_user.zID + " " + zOpt,
@@ -1971,8 +1942,20 @@
                 "zID": reg.zID,
             };
             if (reg.type == "unregister") {
-                rmLectItem(g_rootNode, u);    //update tree
+                var old = isOptRegistered(tOpt.zID);
+                rmLectItem(g_rootNode, old);    //update tree
             } else {
+                //remove old registered opt
+                for (var i in progNode.childs) {
+                    var otherOpt = progNode.childs[i].lect;
+                    var old = isOptRegistered(otherOpt.zID);
+                    if (old != null) {
+                        rmLectItem(g_rootNode, old);
+                        var chkBoxOld = getChkBoxEl(otherOpt.zID);
+                        chkBoxOld.textContent = g_impSrc.unlike;
+                    }
+                }
+                //add new register
                 addLectItem(g_rootNode, u);    //update tree
             }
 
@@ -1996,7 +1979,7 @@
             return "id_chk_" + optzID;
         }
         function mkOptzID(progzID, optzIdx) {
-            var optzID = progzID + "_opt" + (parseInt(optzIdx) - 1).toString();
+            var optzID = progzID + "_opt" + optzIdx;
             return optzID;
         }
     </script>
