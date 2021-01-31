@@ -536,7 +536,8 @@ namespace WindowsFormsApp1
             m_tree.Nodes.Clear();
 
             //var titles = getTitles();
-            var titles = m_content.getPrograms();
+            //var titles = m_content.getPrograms();
+            var titles = m_content.getReport();
             m_titles = titles;
             addTitles(titles);
             renderTree(m_nodeDict.Values.ElementAt(0));

@@ -674,6 +674,10 @@ namespace WindowsFormsApp1
         {
             throw new NotImplementedException();
         }
+        public virtual List<MyTitle> getReport()
+        {
+            throw new NotImplementedException();
+        }
         #region dispose
         // Dispose() calls Dispose(true)  
         public void Dispose()
@@ -870,7 +874,7 @@ namespace WindowsFormsApp1
             var user = new MyUser();
             user.ID = Convert.ToUInt64(rd["ID"]);
             user.zID = ConvId(user.ID, eTypeID.user);
-            user.name = Convert.ToString(rd["zName"]);
+            user.name = Convert.ToString(rd["zUser"]);
             return user;
         }
         private MyUser getUserById(string zid)
@@ -1491,6 +1495,174 @@ namespace WindowsFormsApp1
             return lst;
         }
 
+        public override List<MyTitle> getReport()
+        {
+            OleDbConnection cnn = m_cnn;
+            var lst = new List<MyTitle>();
+
+            //get paths
+            var progLst = new List<MyTitle>();
+            var optLst = new List<MyTitle>();
+            var qry = "select * from programs";
+            var cmd = new OleDbCommand(qry, cnn);
+            var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                UInt64 progID = Convert.ToUInt64(reader["ID"]);
+                var tProg = new MyTitle()
+                {
+                    ID = progID,
+                    zID = ConvId(progID, eTypeID.program),
+                    title = Convert.ToString(reader["zTitle"]),
+                    content = Convert.ToString(reader["zContent"]),
+                    type = "program",
+                    childs = new Dictionary<ulong, MyTitle>()
+                };
+                tProg.path = Convert.ToString(reader["zPath"]) + "/" + tProg.title;
+                progLst.Add(tProg);
+
+                //option
+                var zOpt = Convert.ToString(reader["zOpt"]);
+                var arrOpt = zOpt.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                var iOpt = 0;
+                for (; iOpt < arrOpt.Length; iOpt++)
+                {
+                    var tOpt = new MyTitle()
+                    {
+                        zID = tProg.zID + "_opt" + (iOpt + 1).ToString(),
+                        title = arrOpt[iOpt],
+                        content = arrOpt[iOpt],
+                        path = tProg.path + "/" + arrOpt[iOpt],
+                        type = eTypeID.prog_opt.ToString(),
+                        childs = new Dictionary<ulong, MyTitle>(),
+                    };
+                    optLst.Add(tOpt);
+                    tProg.childs.Add((UInt64)iOpt + 1, tOpt);
+                }
+
+                //not register
+                var notReg = new MyTitle()
+                {
+                    zID = tProg.zID + "_opt" + (iOpt + 1).ToString(),
+                    title = "not register",
+                    content = "not register",
+                    path = tProg.path + "/" + "not register",
+                    type = eTypeID.prog_opt.ToString(),
+                    childs = new Dictionary<ulong, MyTitle>(),
+                };
+                optLst.Add(notReg);
+                tProg.childs.Add((UInt64)iOpt + 1, notReg);
+            }
+            reader.Close();
+
+            //add to lst
+            lst.AddRange(progLst);
+            lst.AddRange(optLst);
+
+            //get user dict
+            var tDict = new Dictionary<UInt64, MyUser>();
+            var qry3 = "select * from users";
+            var cmd3 = new OleDbCommand(qry3, cnn);
+            var reader3 = cmd3.ExecuteReader();
+            while(reader3.Read())
+            {
+                var tUser = crtUser(reader3);
+                tDict.Add(tUser.ID, tUser);
+            }
+            reader3.Close();
+
+            //get title
+            var qry2 = "select * from program_registers WHERE programID = @programID";
+            var cmd2 = new OleDbCommand(qry2, cnn);
+            cmd2.Parameters.Add("@programID", OleDbType.Integer);
+
+            foreach (var program in progLst)
+            {
+                var regH = new HashSet<UInt64>();
+                var regLst = new List<MyTitle>();
+                cmd2.Parameters[0].Value = program.ID;
+                var reader2 = cmd2.ExecuteReader();
+                while (reader2.Read())
+                {
+                    var regID = Convert.ToUInt64(reader2["ID"]);
+                    var uID = Convert.ToUInt64(reader2["userID"]);
+                    var iOpt = Convert.ToUInt64(reader2["registerOption"]);
+                    var title = new MyTitle()
+                    {
+                        ID = regID,
+                        zID = ConvId(regID, eTypeID.prog_reg),
+                        path = Convert.ToString(iOpt),
+                        title = Convert.ToString(uID),
+                        content = Convert.ToString(reader2["zContent"]),
+                        type = "register",
+                        //childs = new Dictionary<ulong, MyTitle>()
+                    };
+                    regLst.Add(title);
+                    regH.Add(uID);
+                    program.childs[iOpt].childs.Add(title.ID,title);
+                }
+                reader2.Close();
+
+                //unregister
+                foreach(var tUser in tDict.Values)
+                {
+                    if (!regH.Contains(tUser.ID))
+                    {
+                        var tID = getUnregId();
+                        UInt64 iOpt = (UInt64)program.childs.Count;
+                        var title = new MyTitle()
+                        {
+                            ID = tID,
+                            zID = ConvId( tID,eTypeID.prog_reg),
+                            path = iOpt.ToString(),
+                            title = Convert.ToString(tUser.ID),
+                            type = "register",
+                            content = tUser.ID.ToString(),
+                            childs = new Dictionary<ulong, MyTitle>()
+                        };
+                        regLst.Add(title);
+                        program.childs[iOpt].childs.Add(title.ID, title);
+                    }
+                }
+                //resolve path: user info
+                foreach (var reg in regLst)
+                {
+                    resolveRegPath(program, reg, tDict);
+                }
+
+                //update option content
+                MyTitle tOpt = null;
+                for(var iOpt = 0; iOpt< program.childs.Count;iOpt++)
+                {
+                    tOpt = program.childs.Values.ElementAt(iOpt);
+                    tOpt.content += string.Format(" {0}/{1}", tOpt.childs.Count, tDict.Count);
+                }
+                tOpt.content += getRegLst(tOpt);
+
+                //add to lst
+                lst.AddRange(regLst);
+
+            }
+
+
+            return lst;
+        }
+
+        string getRegLst(MyTitle opt)
+        {
+            string userLst = "";
+            foreach(var tUser in opt.childs.Values)
+            {
+                userLst = userLst + "," + tUser.title;
+            }
+            return userLst;
+        }
+
+        UInt64 unregId = (UInt64)1 << 31;
+        UInt64 getUnregId()
+        {
+            return unregId++;
+        }
         void resolveRegPath(MyTitle program, MyTitle reg, Dictionary<UInt64, MyUser> tDict)
         {
             UInt64 optIdx = Convert.ToUInt64(reg.path);
