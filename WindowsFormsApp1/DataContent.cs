@@ -1124,7 +1124,7 @@ namespace WindowsFormsApp1
             cmd.CommandText = "Select @@Identity";
             var id = cmd.ExecuteScalar();
             title.ID = Convert.ToUInt64(id);
-            title.title = "new title " + title.ID.ToString();
+            title.title = title.ID.ToString() + shortenMsg(title.content, 50);
             title.path = title.path + "/" + title.title;
 
             string qry2 = "UPDATE messages SET zTitle = @zTitle WHERE ID = @ID";
@@ -1139,6 +1139,13 @@ namespace WindowsFormsApp1
             return title;
         }
 
+        private string shortenMsg(string msg, int len)
+        {
+            var reg = new Regex("[\\s,\\.]");
+            var i = Math.Max(len, msg.Length);
+            var m = reg.Matches(msg.Substring(0,len-1));
+            return "";
+        }
 
         public override MyTitle editTitle(MyTitle msg)
         {

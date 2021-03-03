@@ -59,6 +59,12 @@ namespace WindowsFormsApp1
             fileMI.DropDownItems.Add("&Preview").Click += (s, e) => { PreviewTitle(s, e); };
             fileMI.DropDownItems.Add("&Export").Click += (s, e) => { ExportSelected(s, e); };
             fileMI.DropDownItems.Add("&Find").Click += (s, e) => { OpenFindWnd(); };
+
+            var modeMI = new ToolStripMenuItem("&Mode");
+            menu.Items.Add(modeMI);
+            modeMI.DropDownItems.Add("&Chat").Click += (s,e)=> { OnChgMode(s, e, "chat"); } ;
+            modeMI.DropDownItems.Add("&Register").Click += (s, e) => { OnChgMode(s, e, "register"); };
+            modeMI.DropDownItems.Add("&Report").Click += (s, e) => { OnChgMode(s, e, "report"); };
             this.MainMenuStrip  = menu;
 
             var configMI = new ToolStripMenuItem("&Config");
@@ -127,6 +133,27 @@ namespace WindowsFormsApp1
 
             this.Load += OnLoadForm;
             this.FormClosed += OnCloseForm;
+        }
+
+        private void OnChgMode(object s, EventArgs e, string zMode)
+        {
+            //clear tree
+            m_nodeDict.Clear();
+            m_tree.Nodes.Clear();
+            switch (zMode)
+            {
+                case "chat":
+                    m_titles = getTitles();
+                    break;
+                case "register":
+                    m_titles = m_content.getPrograms();
+                    break;
+                case "report":
+                    m_titles = m_content.getReport();
+                    break;
+            }
+            addTitles(m_titles);
+            renderTree(m_nodeDict.Values.ElementAt(0));
         }
 
         private void MiFont_Click(object sender, EventArgs e)
