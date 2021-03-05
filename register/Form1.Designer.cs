@@ -42,6 +42,7 @@ namespace register
             this.optTxt = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -65,7 +66,7 @@ namespace register
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(656, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(608, 24);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -88,7 +89,7 @@ namespace register
             // 
             this.treeView1.Location = new System.Drawing.Point(3, 6);
             this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(212, 395);
+            this.treeView1.Size = new System.Drawing.Size(212, 314);
             this.treeView1.TabIndex = 6;
             // 
             // userCmb
@@ -104,7 +105,7 @@ namespace register
             this.progCmb.FormattingEnabled = true;
             this.progCmb.Location = new System.Drawing.Point(55, 3);
             this.progCmb.Name = "progCmb";
-            this.progCmb.Size = new System.Drawing.Size(376, 20);
+            this.progCmb.Size = new System.Drawing.Size(344, 20);
             this.progCmb.TabIndex = 7;
             // 
             // label1
@@ -163,6 +164,7 @@ namespace register
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.richTextBox1);
             this.splitContainer1.Panel2.Controls.Add(this.progCmb);
             this.splitContainer1.Panel2.Controls.Add(this.textBox1);
             this.splitContainer1.Panel2.Controls.Add(this.optTxt);
@@ -171,15 +173,23 @@ namespace register
             this.splitContainer1.Panel2.Controls.Add(this.addBtn);
             this.splitContainer1.Panel2.Controls.Add(this.label2);
             this.splitContainer1.Panel2.Controls.Add(this.userCmb);
-            this.splitContainer1.Size = new System.Drawing.Size(656, 401);
-            this.splitContainer1.SplitterDistance = 218;
+            this.splitContainer1.Size = new System.Drawing.Size(608, 322);
+            this.splitContainer1.SplitterDistance = 202;
             this.splitContainer1.TabIndex = 12;
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Location = new System.Drawing.Point(-1, 206);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(400, 114);
+            this.richTextBox1.TabIndex = 12;
+            this.richTextBox1.Text = "";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(656, 431);
+            this.ClientSize = new System.Drawing.Size(608, 347);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -211,6 +221,7 @@ namespace register
         private System.Windows.Forms.TextBox optTxt;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.RichTextBox richTextBox1;
     }
 }
 

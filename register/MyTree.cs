@@ -12,7 +12,7 @@ namespace register
     //using
     //m_treeStyle = TreeStyle.check;
     //initTree(); //set state imagine
-    class MyTree
+    public class MyTree
     {
         public enum TreeStyle
         {
@@ -24,13 +24,88 @@ namespace register
         public TreeView m_tree;
         Dictionary<string, Node> m_nodeDict;    //path, node
         #region tree
-        void addTitles(List<MyTitle> titles)
+
+        public void Clear()
+        {
+            m_nodeDict.Clear();
+            m_tree.Nodes.Clear();
+        }
+        public void AddTitles(List<MyTitle> titles)
         {
             foreach (var title in titles)
             {
                 var tNode = addRow('T', 1,
                     title.path, title.title);
                 tNode.title = title;
+                RenderNode(tNode);
+            }
+        }
+        public MyTitle GetTitle(string path)
+        {
+            Node node = m_nodeDict[path];
+            return node.title;
+        }
+        public int Remove(string path)
+        {
+            if (m_nodeDict.ContainsKey(path))
+            {
+                Node child = m_nodeDict[path];
+                m_nodeDict.Remove(path);
+                int idx = path.LastIndexOf('/');
+                string parentPath = path.Substring(0,idx);
+                Node parent = m_nodeDict[parentPath];
+                parent.tnode.Nodes.Remove(child.tnode);
+
+                if (parent.tnode.Nodes.Count == 0)
+                {
+                    Remove(parentPath);
+                }
+                return 1;
+            }
+
+            return 0;
+        }
+        public int Remove(MyTitle title)
+        {
+            return Remove(title.path);
+        }
+        public int Add(MyTitle title)
+        {
+            if (!m_nodeDict.ContainsKey(title.path))
+            {
+                var tNode = addRow('T', 1,title.path, title.title);
+                tNode.title = title;
+                RenderNode(tNode);
+                return 1;
+            }
+            return 0;
+        }
+        void RenderNode(Node node)
+        {
+            var tDict = m_nodeDict;
+            var arr = node.title.path.Split(new char[] { '\\', '/' });
+            string path = arr[0];
+            Node parent;
+            parent = tDict[path];
+            if (parent.tnode == null)
+            {
+                parent.tnode = m_tree.Nodes.Add(parent.name);
+                parent.tnode.Tag = path;
+                parent.tnode.StateImageIndex = 0;
+            }
+
+            Node child;
+            for (int j = 1; j < arr.Length; j++)
+            {
+                path = path + "/" + arr[j];
+                child = tDict[path];
+                if (child.tnode == null)
+                {
+                    child.tnode = parent.tnode.Nodes.Add(child.name);
+                    child.tnode.Tag = path;
+                    child.tnode.StateImageIndex = 0;
+                }
+                parent = child;
             }
         }
 
@@ -61,6 +136,7 @@ namespace register
             //arr[0] = dir;
             string path = arr[0];
             Node parent;
+            //m_nodeDict = new Dictionary<string, Node>();
             if (tDict.ContainsKey(path))
             {
                 parent = tDict[path];
@@ -191,7 +267,7 @@ namespace register
             }
             return lst;
         }
-        void initTree()
+        public void InitTree()
         {
             m_tree.CheckBoxes = false;
             m_tree.StateImageList = new ImageList();
@@ -204,6 +280,8 @@ namespace register
                     m_tree.StateImageList = CrtRadBtnImg();
                     break;
             }
+            
+            m_nodeDict = new Dictionary<string, Node>();
         }
         protected void OnNodeMouseClick(object sender, System.Windows.Forms.TreeNodeMouseClickEventArgs e)
         {

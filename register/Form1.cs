@@ -22,12 +22,12 @@ namespace register
         Indexer m_idx;
         string m_db;
         string m_cnnStr;
-        Dictionary<string,MyNode> m_nodes;  //<zUserFb><MyNode>
+        Dictionary<string, MyNode> m_nodes;  //<zUserFb><MyNode>
 
         public Form1()
         {
             InitializeComponent();
-            Load+= onLoad;
+            Load += onLoad;
         }
 
         private void onLoad(object sender, EventArgs e)
@@ -40,11 +40,12 @@ namespace register
             List<MyProgram> progs = getProg();
             m_programs = progs;
 
-            progCmb.Items.AddRange(progs.Select(i=>i.zName).ToArray());
+            progCmb.Items.AddRange(progs.Select(i => i.zName).ToArray());
             progCmb.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             progCmb.AutoCompleteSource = AutoCompleteSource.ListItems;
 
             m_users = getUsers();
+            m_groups = m_cp.GetAllGroups();
 
             userCmb.KeyUp += UserCmb_KeyUp; ;
             //textBox1.TextChanged += TextBox1_TextChanged;
@@ -53,12 +54,19 @@ namespace register
             progCmb.DropDownStyle = ComboBoxStyle.DropDownList;
             progCmb.SelectedIndexChanged += ProgCmb_SelectedIndexChanged;
 
-            //treeView1.NodeMouseClick += TreeView1_NodeMouseClick;
-            //addBtn.Click += AddBtn_Click;
+            treeView1.NodeMouseClick += TreeView1_NodeMouseClick;
+            addBtn.Click += AddBtn_Click;
+
+            splitContainer1.Dock = DockStyle.Fill;
+            progCmb.Anchor = AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Top;
+            treeView1.Dock = DockStyle.Fill;
+
+            richTextBox1.Anchor = AnchorStyles.Left|AnchorStyles.Right|AnchorStyles.Bottom|AnchorStyles.Top;
 
             m_treeMng = new MyTree();
             m_treeMng.m_tree = treeView1;
             m_treeMng.m_treeStyle = MyTree.TreeStyle.check;
+            m_treeMng.InitTree();
         }
 
         private void AddBtn_Click(object sender, EventArgs e)
@@ -75,44 +83,54 @@ namespace register
             var nOpt = int.Parse(m.Groups[1].Value);
             var zOpt = m.Groups[3].Value;
             var zUserFb = userCmb.Text;
-            MyUser user = m_users.Find(x=>x.zUserFb == zUserFb);
+            MyUser user = m_users.Find(x => x.zUserFb == zUserFb);
             var zProg = progCmb.Text;
-            MyProgram prog = m_programs.Find(x=>x.zName == zProg);
-            MyReg myReg;
-            myReg = m_nodes[zUserFb].data as MyReg;
+            MyProgram prog = m_programs.Find(x => x.zName == zProg);
+            MyReg myReg = new MyReg();
+            myReg.userID = user.ID;
             myReg.programID = prog.ID;
+            myReg.nStatus = nOpt;
+            myReg.zNote = zOpt;
             int ret = m_cp.AddUpdateReg(myReg);
 
-            moveNode(m_nodes[zUserFb]); //move to register branches
+            MyTree.MyTitle title = new MyTree.MyTitle();
+            MyGroup grp = m_groups.Find(x => x.nGroup == user.nGroup);
+            title.title = user.zUserFb;
+            title.path = string.Format("register/{0}/{1}", grp.zGroup, user.zUserFb);
+            var nRet = m_treeMng.Add(title);
+            if (nRet == 1)
+            {
+                title.path = string.Format("un-register/{0}/{1}", grp.zGroup, user.zUserFb);
+                m_treeMng.Remove(title);
+            }
         }
 
         private void TreeView1_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            MyNode node = (e.Node.Tag) as MyNode;
-            switch (node.eType)
+            string path = (e.Node.Tag) as string;
+            MyTree.MyTitle title = m_treeMng.GetTitle(path);
+            if (title != null)
             {
-                case MyNode.eNodeType.eReg:
-                    MyReg reg = node.data as MyReg;
-                    if (reg.zStatus != "")
-                    {
-                        optTxt.Text = string.Format("{0} ({1})", reg.nStatus, reg.zStatus);
-                    } else
-                    {
-                        optTxt.Text = reg.nStatus.ToString();
-                    }
-                    userCmb.Text = reg.user.zUserFb;
-                    break;
-                case MyNode.eNodeType.eUser:
-                    MyUser user = node.data as MyUser;
-                    userCmb.Text = user.zUserFb;
-                    break;
+                var zopt = title.content;
+                var user = m_users.Find(x => x.zUserFb == title.title);
+                userCmb.Text = title.title;
+                optTxt.Text = zopt;
+            } else
+            {
+                PreviewReport(e.Node);
             }
+        }
+
+        void PreviewReport(TreeNode tnode)
+        {
+            //string 
         }
 
         private void ProgCmb_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var rootNode = BuildTree();
-            updateTree(rootNode);
+            var titleLst = BuildTree();
+            m_treeMng.Clear();
+            m_treeMng.AddTitles(titleLst);
         }
 
         void getCnnStr()
@@ -152,8 +170,9 @@ namespace register
 
         private void UserCmb_KeyUp(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Space) {
-                UserCmb_TextChanged(sender,e);
+            if (e.KeyCode == Keys.Space)
+            {
+                UserCmb_TextChanged(sender, e);
             }
         }
 
@@ -182,20 +201,20 @@ namespace register
 
         private void TextBox1_TextChanged(object sender, EventArgs e)
         {
-            
+
         }
 
         bool m_busy = false;
         BindingSource m_bs;
         private void UserCmb_TextChanged(object sender, EventArgs e)
         {
-            if (m_busy) { return;}
+            if (m_busy) { return; }
             m_busy = true;
             if (m_idx == null)
             {
                 m_idx = new Indexer();
                 var tLst = new List<string>();
-                foreach(var i in m_users)
+                foreach (var i in m_users)
                 {
                     tLst.Add(i.zUserFb);
                 }
@@ -235,7 +254,7 @@ namespace register
             //userCmb.AutoCompleteSource = AutoCompleteSource.CustomSource;
             //userCmb.AutoCompleteCustomSource = m_col;
             //}
-            
+
         }
 
         private List<MyUser> getUsers()
@@ -260,14 +279,14 @@ namespace register
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Dictionary<string,MyUser> userD;
+            Dictionary<string, MyUser> userD;
             var content = new lOleDbContentProvider();
             //var zDb = ConfigMng.findTmpl("");
             var zDb = @"C:\Users\Onsiter\Google Drive\CBV\DTPTXX\tools\PTXX_NB.accdb";
             var cnnStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=<zDb>;";
             content.initCnn(cnnStr.Replace("<zDb>", zDb));
             var userLst = content.GetAllUsers();
-            userD = new Dictionary<string,MyUser>();
+            userD = new Dictionary<string, MyUser>();
             foreach (MyUser tuser in userLst)
             {
                 userD.Add(tuser.zFb, tuser);
@@ -275,7 +294,7 @@ namespace register
 
             var arr = optTxt.Lines;
             int s = 0;
-            for(int i = 0;i< arr.Length;i++)
+            for (int i = 0; i < arr.Length; i++)
             {
                 string line = arr[i];
                 switch (s)
@@ -284,9 +303,10 @@ namespace register
                         if (userD.ContainsKey(line))
                         {
                             s = 1;
-                        } else
+                        }
+                        else
                         {
-                            s=-1;
+                            s = -1;
                         }
                         break;
                 }
@@ -311,7 +331,7 @@ namespace register
         List<MyReg> getRegister()
         {
             var zProg = progCmb.Text;
-            var prog = m_programs.Find(x=>x.zName == zProg);
+            var prog = m_programs.Find(x => x.zName == zProg);
             List<MyReg> regs = m_cp.GetRegs(prog);
             return regs;
         }
@@ -330,97 +350,46 @@ namespace register
             };
             public eNodeType eType;
         }
-        public MyNode BuildTree()
+        public List<MyTree.MyTitle> BuildTree()
         {
-            m_nodes = new Dictionary<string, MyNode>();
-            var groups = m_cp.GetAllGroups();
-            var regs  = getRegister();
-            var root = new MyNode(){zPath = "/" };
+            var groups = m_groups;
+            var regs = getRegister();
 
-            Dictionary<UInt64,MyUser> unreg = new Dictionary<ulong, MyUser>();
-            foreach(MyUser user in m_users)
+            List<MyTree.MyTitle> titleLst = new List<MyTree.MyTitle>();
+
+            Dictionary<UInt64, MyUser> userDict = new Dictionary<ulong, MyUser>();
+            foreach (MyUser user in m_users)
             {
-                unreg.Add(user.ID,user);
+                userDict.Add(user.ID, user);
             }
 
-            root.childs = new List<MyNode>();
-            var regNode = new MyNode()
+            foreach (MyReg reg in regs)
             {
-                zTitle = "register",
-                zPath = "/register",
-                childs = new List<MyNode>(), 
-            };
-            var unregNode = new MyNode(){
-                zTitle = "un-register",
-                zPath = "/un-register",
-                childs = new List<MyNode>(), 
-            };
-            root.childs.Add(regNode);
-            root.childs.Add(unregNode);
-
-            Dictionary<UInt64,MyNode> grpNodes = new Dictionary<ulong, MyNode>();
-            foreach(MyReg reg in regs)
-            {
-                if (!unreg.ContainsKey(reg.userID)){
+                if (!userDict.ContainsKey(reg.userID))
+                {
                     continue;
                 }
-                reg.user = unreg[reg.userID];
-                MyGroup grp = groups.Find(x=>x.nGroup == reg.user.nGroup);
-                MyNode grpNode;
-                if (grpNodes.ContainsKey(grp.ID))
-                {
-                    grpNode = grpNodes[grp.ID];
-                }
-                else
-                {
-                    grpNode = new MyNode {
-                        zPath = regNode.zPath + "/" + grp.zGroup,
-                        zTitle = grp.zGroup,
-                        childs = new List<MyNode>()};
-                    grpNodes.Add(grp.ID,grpNode);
-                    regNode.childs.Add(grpNode);
-                }
-                grpNode.childs.Add(new MyNode(){
-                    zTitle = reg.user.zUserFb,
-                    zPath = grpNode.zPath + "/"  + reg.user.zUserFb,
-                    eType = MyNode.eNodeType.eReg,
-                    data = reg});
+                reg.user = userDict[reg.userID];
+                MyGroup grp = groups.Find(x => x.nGroup == reg.user.nGroup);
+                MyTree.MyTitle title = new MyTree.MyTitle();
+                title.title = reg.user.zUserFb;
+                title.path = string.Format("register/{0}/{1}", grp.zGroup, title.title);
+                title.content = string.Format("{0} ({1})", reg.nStatus, reg.zNote);
+                titleLst.Add(title);
 
-                unreg.Remove(reg.userID);
+                userDict.Remove(reg.userID);
             }
 
-            grpNodes = new Dictionary<ulong, MyNode>();
-            foreach(MyUser user in unreg.Values)
+            foreach (MyUser user in userDict.Values)
             {
-                MyGroup grp = groups.Find(x=>x.nGroup == user.nGroup);
-                MyNode grpNode;
-                if (grpNodes.ContainsKey(grp.ID))
-                {
-                    grpNode = grpNodes[grp.ID];
-                }
-                else
-                {
-                    grpNode = new MyNode { zTitle = grp.zGroup};
-                    grpNode.zPath = unregNode.zPath + "/" + grpNode.zTitle;
-                    grpNode.childs = new List<MyNode>();
-                    grpNodes.Add(grp.ID,grpNode);
-                    unregNode.childs.Add(grpNode);
-                }
-                MyReg newReg = new MyReg() {
-                    userID = user.ID,
-                    user = user,
-                    };
-                grpNode.childs.Add(new MyNode(){
-                    zTitle = user.zUserFb,
-                    zPath = grpNode.zPath + "/"  + user.zUserFb,
-                    eType = MyNode.eNodeType.eReg,
-                    data = newReg });
+                MyGroup grp = groups.Find(x => x.nGroup == user.nGroup);
+                MyTree.MyTitle title = new MyTree.MyTitle();
+                title.title = user.zUserFb;
+                title.path = string.Format("un-register/{0}/{1}", grp.zGroup, title.title);
+                titleLst.Add(title);
             }
 
-            m_nodes.Add("root",root);
-            m_nodes.Add("register",regNode);
-            m_nodes.Add("un-register",unregNode);
-            return root;
+            return titleLst;
         }
 
         //tree
@@ -431,24 +400,23 @@ namespace register
         void updateTree(MyNode root)
         {
             treeView1.Nodes.Clear();
-            foreach(MyNode child in root.childs)
+            foreach (MyNode child in root.childs)
             {
                 var newNode = treeView1.Nodes.Add(child.zTitle);
                 newNode.Tag = child;
-                addNode(newNode,child.childs);
+                addNode(newNode, child.childs);
             }
         }
-        
-        
+
         void addNode(TreeNode parent, List<MyNode> childs)
         {
-            foreach(MyNode child in childs)
+            foreach (MyNode child in childs)
             {
                 var newNode = parent.Nodes.Add(child.zTitle);
                 newNode.Tag = child;
                 if (child.childs != null)
                 {
-                    addNode(newNode,child.childs);
+                    addNode(newNode, child.childs);
                 }
             }
         }
@@ -459,26 +427,27 @@ namespace register
             MyNode regNode = m_nodes["register"];
             MyNode unregNode = m_nodes["un-register"];
             MyReg reg = node.data as MyReg;
-            MyGroup grp = m_groups.Find(x=>x.nGroup == reg.user.nGroup);
+            MyGroup grp = m_groups.Find(x => x.nGroup == reg.user.nGroup);
             MyNode grpNode;
-            
+
             //register
-            grpNode=regNode.childs.Find(x=>x.zTitle == grp.zGroup);
+            grpNode = regNode.childs.Find(x => x.zTitle == grp.zGroup);
             if (grpNode != null)
             {
                 if (!grpNode.childs.Contains(node))
                 {
                     grpNode.childs.Add(node);
                 }
-            } else
+            }
+            else
             {
-                grpNode = new MyNode() { zTitle = grp.zGroup};
+                grpNode = new MyNode() { zTitle = grp.zGroup };
                 regNode.childs.Add(grpNode);
                 grpNode.childs.Add(node);
             }
 
             //un-register
-            grpNode=unregNode.childs.Find(x=>x.zTitle == grp.zGroup);
+            grpNode = unregNode.childs.Find(x => x.zTitle == grp.zGroup);
             if (grpNode != null)
             {
                 if (grpNode.childs.Contains(node))

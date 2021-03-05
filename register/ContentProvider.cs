@@ -127,7 +127,7 @@ namespace register
         public List<MyProgram> GetAllProgs()
         {
             List<MyProgram> progLst = new List<MyProgram>();
-            var qry = "select * from programs";
+            var qry = "select top 10 * from programs order by startDate desc";
             var cmd = new OleDbCommand(qry, m_cnn);
             var reader = cmd.ExecuteReader();
             while (reader.Read())
