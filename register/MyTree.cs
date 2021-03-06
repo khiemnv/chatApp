@@ -168,6 +168,29 @@ namespace register
             parent.type = type;
             return parent;
         }
+
+        public List<MyTitle> GetAllChilds(string path)
+        {
+            var node = m_nodeDict[path];
+            List<Node> lst = new List<Node>();
+            List<MyTitle> titles = new List<MyTitle>();
+            lst.Add(node);
+            while(lst.Count > 0)
+            {
+                node = lst[0];
+                lst.RemoveAt(0);
+                for (int i = 0;i<node.childs.Count;i++)
+                {
+                    lst.Add(node.childs[i]);
+                    if (node.childs[i].title != null)
+                    {
+                        titles.Add(node.childs[i].title);
+                    }
+                }
+            }
+            return titles;
+        }
+
         TreeNode CreateTreeNode(Node node, TreeNode newNode = null)
         {
             //if (node.type != 'T') { node.size = (UInt64)node.childs.Count; }

@@ -123,7 +123,48 @@ namespace register
 
         void PreviewReport(TreeNode tnode)
         {
-            //string 
+            Regex reg = new Regex(@"^(\d)( \((.*)\))?");
+            //string
+            string path = tnode.Tag as string;
+            List<MyTree.MyTitle> lst = m_treeMng.GetAllChilds(path);
+            Dictionary<int,List<string>> dict = new Dictionary<int, List<string>>();
+            int maxOpt = 0;
+            foreach (MyTree.MyTitle title in lst)
+            {
+                MyUser user = m_users.Find(x=>x.zUserFb == title.title);
+                int nOpt = 0;
+                string zOpt = "";
+                if (title.content != null)
+                {
+                    var m = reg.Match(title.content);
+                    nOpt = int.Parse(m.Groups[1].Value);
+                    zOpt = m.Groups[3].Value;
+                }
+                if (dict.ContainsKey(nOpt))
+                {
+                    dict[nOpt].Add(user.zUserFb +" " + zOpt);
+                } else
+                {
+                    dict[nOpt] = new List<string>();
+                    dict[nOpt].Add(user.zUserFb +" " + zOpt);
+                    maxOpt = maxOpt<nOpt?nOpt:maxOpt;
+                }
+            }
+            richTextBox1.Clear();
+            var old = richTextBox1.Font;
+            for(int nOpt = 0;nOpt<=maxOpt;nOpt++)
+            {
+                if (!dict.ContainsKey(nOpt)) continue;
+
+                var titles = dict[nOpt];
+                //var nOpt = p.Key;
+                
+                richTextBox1.SelectionFont = new Font(old, FontStyle.Bold);
+                richTextBox1.SelectedText = string.Format("{0}\n",nOpt);
+                richTextBox1.SelectionFont = old;
+                string txt = string.Join("\n",titles);
+                richTextBox1.SelectedText = txt + "\n";
+            }
         }
 
         private void ProgCmb_SelectedIndexChanged(object sender, EventArgs e)
