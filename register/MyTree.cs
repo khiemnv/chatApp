@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -22,7 +23,7 @@ namespace register
         public TreeStyle m_treeStyle;
 
         public TreeView m_tree;
-        Dictionary<string, Node> m_nodeDict;    //path, node
+        Dictionary<string, MyNode> m_nodeDict;    //path, node
         #region tree
 
         public void Clear()
@@ -34,26 +35,70 @@ namespace register
         {
             foreach (var title in titles)
             {
-                var tNode = addRow('T', 1,
-                    title.path, title.title);
+                var tNode = addRow('T', 1, title.path, title.title);
                 tNode.title = title;
                 RenderNode(tNode);
             }
         }
+
+        public bool PathExist(string path)
+        {
+            return m_nodeDict.ContainsKey(path);
+        }
         public MyTitle GetTitle(string path)
         {
-            Node node = m_nodeDict[path];
-            return node.title;
+            if (m_nodeDict.ContainsKey(path))
+            {
+                MyNode node = m_nodeDict[path];
+                return node.title;
+            }
+            else
+            {
+                Debug.Assert(false,"invalid path!");
+                return null;
+            }
+        }
+
+        public List<MyTitle> GetSelectedTitle()
+        {
+            List<TreeNode> lst = new List<TreeNode>();
+            List<TreeNode> q = new List<TreeNode>();
+            List<MyTitle> titles = new List<MyTitle>();
+            foreach(TreeNode parent in m_tree.Nodes) { 
+                if (parent.StateImageIndex == 0) { continue;}
+                q.Add(parent);
+                while (q.Count > 0)
+                {
+                    var n = q[0];
+                    q.RemoveAt(0);
+                    if(n.StateImageIndex == 0) { continue;}
+
+                    if (n.Nodes.Count == 0)
+                    {
+                        lst.Add(n);
+                    }
+                    else
+                    {
+                        q.AddRange(n.Nodes.Cast<TreeNode>().ToList());
+                    }
+                } 
+            }
+
+            foreach(TreeNode node in lst){
+                var title = m_nodeDict[node.Tag.ToString()].title;
+                titles.Add(title);
+            }
+            return titles;
         }
         public int Remove(string path)
         {
             if (m_nodeDict.ContainsKey(path))
             {
-                Node child = m_nodeDict[path];
+                MyNode child = m_nodeDict[path];
                 m_nodeDict.Remove(path);
                 int idx = path.LastIndexOf('/');
                 string parentPath = path.Substring(0,idx);
-                Node parent = m_nodeDict[parentPath];
+                MyNode parent = m_nodeDict[parentPath];
                 parent.tnode.Nodes.Remove(child.tnode);
 
                 if (parent.tnode.Nodes.Count == 0)
@@ -78,14 +123,20 @@ namespace register
                 RenderNode(tNode);
                 return 1;
             }
+            else
+            {
+                //update
+                var tNode = m_nodeDict[title.path];
+                tNode.title.content = title.content;
+            }
             return 0;
         }
-        void RenderNode(Node node)
+        void RenderNode(MyNode node)
         {
             var tDict = m_nodeDict;
             var arr = node.title.path.Split(new char[] { '\\', '/' });
             string path = arr[0];
-            Node parent;
+            MyNode parent;
             parent = tDict[path];
             if (parent.tnode == null)
             {
@@ -94,7 +145,7 @@ namespace register
                 parent.tnode.StateImageIndex = 0;
             }
 
-            Node child;
+            MyNode child;
             for (int j = 1; j < arr.Length; j++)
             {
                 path = path + "/" + arr[j];
@@ -129,13 +180,13 @@ namespace register
             }
             return 0;
         }
-        Node addRow(char type, UInt64 size, string name, string dir = "")
+        MyNode addRow(char type, UInt64 size, string name, string dir = "")
         {
             var tDict = m_nodeDict;
             var arr = name.Split(new char[] { '\\', '/' });
             //arr[0] = dir;
             string path = arr[0];
-            Node parent;
+            MyNode parent;
             //m_nodeDict = new Dictionary<string, Node>();
             if (tDict.ContainsKey(path))
             {
@@ -143,10 +194,10 @@ namespace register
             }
             else
             {
-                parent = new Node() { id = path, name = path };
+                parent = new MyNode() { id = path, name = path };
                 tDict.Add(path, parent);
             }
-            Node child;
+            MyNode child;
             for (int j = 1; j < arr.Length; j++)
             {
                 path = path + "/" + arr[j];
@@ -156,7 +207,7 @@ namespace register
                 }
                 else
                 {
-                    child = new Node() { id = path, name = arr[j] };
+                    child = new MyNode() { id = path, name = arr[j] };
                     tDict.Add(path, child);
                     parent.childs.Add(child);
                 }
@@ -172,7 +223,7 @@ namespace register
         public List<MyTitle> GetAllChilds(string path)
         {
             var node = m_nodeDict[path];
-            List<Node> lst = new List<Node>();
+            List<MyNode> lst = new List<MyNode>();
             List<MyTitle> titles = new List<MyTitle>();
             lst.Add(node);
             while(lst.Count > 0)
@@ -191,7 +242,7 @@ namespace register
             return titles;
         }
 
-        TreeNode CreateTreeNode(Node node, TreeNode newNode = null)
+        TreeNode CreateTreeNode(MyNode node, TreeNode newNode = null)
         {
             //if (node.type != 'T') { node.size = (UInt64)node.childs.Count; }
             string name = node.size == 0 ? node.name :
@@ -214,27 +265,27 @@ namespace register
             node.tnode = newNode;
             return newNode;
         }
-        void renderTree(Node root)
+        void renderTree(MyNode root)
         {
             var tree = m_tree;
             m_tree.Nodes.Clear();
             var tnRoot = CreateTreeNode(root);
-            Queue<KeyValuePair<Node, TreeNode>> q = new Queue<KeyValuePair<Node, TreeNode>>();
-            q.Enqueue(new KeyValuePair<Node, TreeNode>(root, tnRoot));
+            Queue<KeyValuePair<MyNode, TreeNode>> q = new Queue<KeyValuePair<MyNode, TreeNode>>();
+            q.Enqueue(new KeyValuePair<MyNode, TreeNode>(root, tnRoot));
             while (q.Count > 0)
             {
                 var rec = q.Dequeue();
-                foreach (Node child in rec.Key.childs)
+                foreach (MyNode child in rec.Key.childs)
                 {
                     var tnChild = CreateTreeNode(child);
                     rec.Value.Nodes.Add(tnChild);
-                    q.Enqueue(new KeyValuePair<Node, TreeNode>(child, tnChild));
+                    q.Enqueue(new KeyValuePair<MyNode, TreeNode>(child, tnChild));
                 }
             }
 
             tree.Nodes.Add(tnRoot);
         }
-        void updateTree(Node parent, Node child)
+        void updateTree(MyNode parent, MyNode child)
         {
             var tnParent = parent.tnode;
             child.tnode = CreateTreeNode(child);
@@ -304,7 +355,8 @@ namespace register
                     break;
             }
             
-            m_nodeDict = new Dictionary<string, Node>();
+            m_nodeDict = new Dictionary<string, MyNode>();
+            m_tree.NodeMouseClick +=OnNodeMouseClick;
         }
         protected void OnNodeMouseClick(object sender, System.Windows.Forms.TreeNodeMouseClickEventArgs e)
         {
@@ -339,7 +391,7 @@ namespace register
             }
         }
 
-        private void DisplayNode(Node node)
+        private void DisplayNode(MyNode node)
         {
             //var lst = getAllTitleR(node);
             //string jsTxt = TitlesLstToJson(lst);
@@ -421,14 +473,14 @@ namespace register
             }
         }
         public virtual void OnSelectedChg() { }
-        public class Node
+        public class MyNode
         {
             public MyTitle title;
             public string id;
             public char type;
             public UInt64 size;
             public string name;
-            public List<Node> childs = new List<Node>();
+            public List<MyNode> childs = new List<MyNode>();
 
             public TreeNode tnode;
         }

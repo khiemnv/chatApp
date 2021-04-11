@@ -33,6 +33,7 @@ namespace register
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openDbToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFormToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.userCmb = new System.Windows.Forms.ComboBox();
             this.progCmb = new System.Windows.Forms.ComboBox();
@@ -42,12 +43,20 @@ namespace register
             this.optTxt = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.tagLstBx = new System.Windows.Forms.CheckedListBox();
+            this.label4 = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.programTV = new System.Windows.Forms.TreeView();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
             this.SuspendLayout();
             // 
             // addBtn
@@ -73,7 +82,8 @@ namespace register
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openDbToolStripMenuItem});
+            this.openDbToolStripMenuItem,
+            this.openFormToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -81,16 +91,25 @@ namespace register
             // openDbToolStripMenuItem
             // 
             this.openDbToolStripMenuItem.Name = "openDbToolStripMenuItem";
-            this.openDbToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+            this.openDbToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
             this.openDbToolStripMenuItem.Text = "OpenDb";
             this.openDbToolStripMenuItem.Click += new System.EventHandler(this.openDbToolStripMenuItem_Click);
             // 
+            // openFormToolStripMenuItem
+            // 
+            this.openFormToolStripMenuItem.Name = "openFormToolStripMenuItem";
+            this.openFormToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+            this.openFormToolStripMenuItem.Text = "OpenForm";
+            this.openFormToolStripMenuItem.Click += new System.EventHandler(this.openFormToolStripMenuItem_Click);
+            // 
             // treeView1
             // 
-            this.treeView1.Location = new System.Drawing.Point(3, 6);
+            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView1.Location = new System.Drawing.Point(0, 0);
             this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(212, 314);
+            this.treeView1.Size = new System.Drawing.Size(149, 132);
             this.treeView1.TabIndex = 6;
+            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.treeView1_AfterSelect);
             // 
             // userCmb
             // 
@@ -116,6 +135,7 @@ namespace register
             this.label1.Size = new System.Drawing.Size(46, 12);
             this.label1.TabIndex = 9;
             this.label1.Text = "program";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label2
             // 
@@ -155,15 +175,18 @@ namespace register
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Location = new System.Drawing.Point(0, 27);
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.treeView1);
+            this.splitContainer1.Panel1.Controls.Add(this.splitContainer2);
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.tagLstBx);
+            this.splitContainer1.Panel2.Controls.Add(this.label4);
             this.splitContainer1.Panel2.Controls.Add(this.richTextBox1);
             this.splitContainer1.Panel2.Controls.Add(this.progCmb);
             this.splitContainer1.Panel2.Controls.Add(this.textBox1);
@@ -173,9 +196,26 @@ namespace register
             this.splitContainer1.Panel2.Controls.Add(this.addBtn);
             this.splitContainer1.Panel2.Controls.Add(this.label2);
             this.splitContainer1.Panel2.Controls.Add(this.userCmb);
-            this.splitContainer1.Size = new System.Drawing.Size(608, 322);
+            this.splitContainer1.Size = new System.Drawing.Size(608, 323);
             this.splitContainer1.SplitterDistance = 202;
             this.splitContainer1.TabIndex = 12;
+            // 
+            // tagLstBx
+            // 
+            this.tagLstBx.FormattingEnabled = true;
+            this.tagLstBx.Location = new System.Drawing.Point(264, 29);
+            this.tagLstBx.Name = "tagLstBx";
+            this.tagLstBx.Size = new System.Drawing.Size(120, 88);
+            this.tagLstBx.TabIndex = 14;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(237, 36);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(21, 12);
+            this.label4.TabIndex = 13;
+            this.label4.Text = "tag";
             // 
             // richTextBox1
             // 
@@ -184,6 +224,32 @@ namespace register
             this.richTextBox1.Size = new System.Drawing.Size(400, 114);
             this.richTextBox1.TabIndex = 12;
             this.richTextBox1.Text = "";
+            // 
+            // splitContainer2
+            // 
+            this.splitContainer2.Location = new System.Drawing.Point(24, 21);
+            this.splitContainer2.Name = "splitContainer2";
+            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.programTV);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.treeView1);
+            this.splitContainer2.Size = new System.Drawing.Size(149, 272);
+            this.splitContainer2.SplitterDistance = 136;
+            this.splitContainer2.TabIndex = 7;
+            // 
+            // programTV
+            // 
+            this.programTV.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.programTV.Location = new System.Drawing.Point(0, 0);
+            this.programTV.Name = "programTV";
+            this.programTV.Size = new System.Drawing.Size(149, 136);
+            this.programTV.TabIndex = 0;
+            this.programTV.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.programTV_AfterSelect);
             // 
             // Form1
             // 
@@ -202,6 +268,10 @@ namespace register
             this.splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -222,6 +292,11 @@ namespace register
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.ToolStripMenuItem openFormToolStripMenuItem;
+        private System.Windows.Forms.CheckedListBox tagLstBx;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.SplitContainer splitContainer2;
+        private System.Windows.Forms.TreeView programTV;
     }
 }
 

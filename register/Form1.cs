@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,22 @@ namespace register
     {
         MyTree m_treeMng;
         lOleDbContentProvider m_cp;
-        List<MyUser> m_users;
+        List<MyUser> p_users;
+        List<MyUser> m_users
+        {
+            get { return p_users; }
+            set
+            {
+                p_users = value;
+                OnUpdateUsers();
+            }
+        }
+
+        private void OnUpdateUsers()
+        {
+            m_idx = null;
+        }
+
         List<MyProgram> m_programs;
         List<MyGroup> m_groups;
         Indexer m_idx;
@@ -24,6 +40,7 @@ namespace register
         string m_cnnStr;
         Dictionary<string, MyNode> m_nodes;  //<zUserFb><MyNode>
 
+        MyTree m_progTreeMng;
         public Form1()
         {
             InitializeComponent();
@@ -37,15 +54,6 @@ namespace register
             m_cp = new lOleDbContentProvider();
             m_cp.initCnn(m_cnnStr);
 
-            List<MyProgram> progs = getProg();
-            m_programs = progs;
-
-            progCmb.Items.AddRange(progs.Select(i => i.zName).ToArray());
-            progCmb.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-            progCmb.AutoCompleteSource = AutoCompleteSource.ListItems;
-
-            m_users = getUsers();
-            m_groups = m_cp.GetAllGroups();
 
             userCmb.KeyUp += UserCmb_KeyUp; ;
             //textBox1.TextChanged += TextBox1_TextChanged;
@@ -56,32 +64,387 @@ namespace register
 
             treeView1.NodeMouseClick += TreeView1_NodeMouseClick;
             addBtn.Click += AddBtn_Click;
+            treeView1.MouseDoubleClick += TreeView1_MouseDoubleClick;
 
             splitContainer1.Dock = DockStyle.Fill;
             progCmb.Anchor = AnchorStyles.Right | AnchorStyles.Left | AnchorStyles.Top;
             treeView1.Dock = DockStyle.Fill;
 
-            richTextBox1.Anchor = AnchorStyles.Left|AnchorStyles.Right|AnchorStyles.Bottom|AnchorStyles.Top;
+            richTextBox1.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom | AnchorStyles.Top;
 
+            splitContainer2.Dock = DockStyle.Fill;
+
+            //init user tree
             m_treeMng = new MyTree();
             m_treeMng.m_tree = treeView1;
             m_treeMng.m_treeStyle = MyTree.TreeStyle.check;
             m_treeMng.InitTree();
+
+            //ToolStripMenuItem mi = new ToolStripMenuItem("refresh programs");
+            //menuStrip1.Items.Add(mi);
+            //mi.Click += (s,ev) => {RefreshDb(); };
+
+            tagLstBx.Click += TagLstBx_Click;
+            tagLstBx.DoubleClick += TagLstBx_DoubleClick;
+            tagLstBx.ItemCheck += TagLstBx_SelectedIndexChanged;
+
+            RefreshTagLst();
+
+            //int prog tree
+            m_progTreeMng = new MyTree();
+            m_progTreeMng.m_tree = programTV;
+            m_progTreeMng.m_treeStyle = MyTree.TreeStyle.check;
+            m_progTreeMng.InitTree();
+            var programTV_menu = new ContextMenuStrip();
+            programTV.ContextMenuStrip = programTV_menu;
+            var refreshProgMi = programTV_menu.Items.Add("refresh programs");
+            refreshProgMi.Click += (s,ev) => {RefreshPrograms(); };
+
+            var statiProgMi = programTV_menu.Items.Add("static");
+            statiProgMi.Click += StaticProgMi_Click;
+            programTV.NodeMouseClick += ProgramTV_NodeMouseClick;
+            var ProgMiCopy = programTV_menu.Items.Add("copy");
+            ProgMiCopy.Click += ProgMiCopy_Click;
+            var newProgMi = programTV.ContextMenuStrip.Items.Add("new program");
+            newProgMi.Click += OnCrtNewProg;
+
+            treeView1.ContextMenuStrip = new ContextMenuStrip();
+            var regmi = treeView1.ContextMenuStrip.Items.Add("refresh");
+            regmi.Click += RegMiRefresh_Click;
+
+            //load data
+            RefreshPrograms();
+            
+            m_users = getUsers();
+            m_groups = m_cp.GetAllGroups();
+
+            var checkOutMid = fileToolStripMenuItem.DropDownItems.Add("CheckOut");
+            checkOutMid.Click += OnCheckOut;
+            var checkInMi = fileToolStripMenuItem.DropDownItems.Add("CheckIn");
+            checkInMi.Click += OnCheckIn;
         }
 
-        private void AddBtn_Click(object sender, EventArgs e)
+        private void OnCrtNewProg(object sender, EventArgs e)
         {
-            var txt = optTxt.Text;
-            Regex reg = new Regex(@"^(\d)( \((.*)\))?");
+            //show input dlg
+            var inputDlg = new inputProg();
+            inputDlg.path = "";
+            if (programTV.SelectedNode != null)
+            {
+                inputDlg.path = programTV.SelectedNode.FullPath.Replace("\\","/");
+            }
+            inputDlg.name = string.Format("new prog {0}-{1}", DateTime.Now.Day,DateTime.Now.Month);
+            inputDlg.date = DateTime.Now;
+            var ret = inputDlg.ShowDialog();
+            if (ret == DialogResult.OK)
+            {
+                //check duplicate
+                var newProg = new MyProgram()
+                {
+                    zPath = inputDlg.path,
+                    zName = inputDlg.name,
+                    startDate = inputDlg.date
+                };
+                if (! m_progTreeMng.PathExist(newProg.zPath + "/" + newProg.zName))
+                {
+                    //add new prog
+                    var bOK = m_cp.AddProg(newProg);
+                    if (bOK)
+                    {
+                        //add to log
+                        m_cp.LogsSaveAdd(newProg);
+
+                        //update gui
+                        var title = Prog2Title(newProg);
+                        m_programs.Add(newProg);
+                        m_progTreeMng.Add(title);
+                    }
+                }
+            }
+        }
+
+        private async void OnCheckIn(object sender, EventArgs e)
+        {
+            CheckInAsync();
+        }
+        private async void OnCheckOut(object sender, EventArgs e)
+        {
+            await CheckOutAsync();
+        }
+        private async Task CheckOutAsync()
+        {
+
+            ContentSync sync = new ContentSync();
+            List<UInt64>ids = await sync.GetIdsAsync("logs");
+            
+            
+            //check out
+            List<UInt64>oldIds  = m_cp.GetIds("logs");
+            List<UInt64> newIds;
+            newIds = ids.FindAll(x=>!oldIds.Contains(x));
+            List<object> objs = await sync.GetObjAsync("logs", newIds);
+            List<MyLog> checkOutLst = new List<MyLog>();
+            foreach(var obj in objs)
+            {
+                checkOutLst.Add(obj as MyLog);
+            }
+            m_cp.AddLogs(checkOutLst);
+        }
+        private async Task CheckInAsync()
+        {
+            ContentSync sync = new ContentSync();
+            //List<UInt64> oldIds = null;
+            //var task1 =  sync.GetIdsAsync("logs");
+            //Task.Run(async ()=> oldIds = await sync.GetIdsAsync("logs"));
+            //task1.RunSynchronously();
+            //task1.Wait();
+            //List<UInt64> oldIds = task1.Result;
+            List<UInt64> oldIds = await sync.GetIdsAsync("logs");
+            List<UInt64> ids = m_cp.GetIds("logs");
+            //check in
+
+            List<UInt64> newIds = ids.FindAll(x => !oldIds.Contains(x));
+
+            List<MyLog> checkInLst = m_cp.GetLogs(newIds);
+            await sync.PutLogAsync("logs", checkInLst);
+            //var task2 = sync.PutLogAsync("logs", checkInLst);
+            //task2.RunSynchronously();
+            //task2.Wait();
+        }
+
+        private void RegMiRefresh_Click(object sender, EventArgs e)
+        {
+            var zProg = progCmb.Text;
+            if (zProg != "")
+            {
+                RefreshRegTree();
+            }
+        }
+
+        private void ProgMiCopy_Click(object sender, EventArgs e)
+        {
+            if (programTV.SelectedNode == null)
+            {
+                return;
+            }
+            string path = (programTV.SelectedNode.Tag) as string;
+            MyTree.MyTitle title = m_progTreeMng.GetTitle(path);
+            if (title != null)
+            {
+                Clipboard.SetText(title.title);
+            }
+        }
+
+        private void ProgramTV_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            string path = (e.Node.Tag) as string;
+            MyTree.MyTitle title = m_progTreeMng.GetTitle(path);
+            if (title != null)
+            {
+                progCmb.Text = title.title;
+            }
+        }
+
+        private void StaticProgMi_Click(object sender, EventArgs e)
+        {
+            List<MyTree.MyTitle> lst = m_progTreeMng.GetSelectedTitle();
+            List<MyReg> regLst = new List<MyReg>();
+            foreach (MyTree.MyTitle title in lst)
+            {
+                var progID = title.ID;
+                var regs = m_cp.GetRegs(progID);
+                regLst.AddRange(regs);
+            }
+            CrtAndRenderRpt(regLst);
+        }
+
+        private void CrtAndRenderRpt(List<MyReg> regLst)
+        {
+            Dictionary <UInt64,MyUser> uDict = new Dictionary<ulong, MyUser>();
+            foreach (MyUser user in m_users)
+            {
+                uDict.Add(user.ID,user);
+            }
+
+            int maxOpt = 0;
+            Dictionary<int, List<MyReg>> tDict = new Dictionary<int, List<MyReg>>();
+            foreach (MyReg reg in regLst)
+            {
+                var uID = reg.userID;
+                if (!uDict.ContainsKey(uID)) { continue;}
+
+                var nOpt = reg.nStatus;
+                var zOpt = reg.zNote;
+                if (nOpt > maxOpt) { maxOpt = nOpt; }
+                if (tDict.ContainsKey(nOpt))
+                {
+                }
+                else
+                {
+                    tDict[nOpt] = new List<MyReg>();
+                }
+                tDict[nOpt].Add(reg);
+            }
+
+
+            List<MyLine> lines = new List<MyLine>();
+            lines.Add(new MyLine
+            {
+                text = string.Format("{0}\t{1}", "option", "count"),
+                bold = true
+            });
+            for (int i = 0; i <= maxOpt; i++)
+            {
+                if (tDict.ContainsKey(i))
+                {
+                    //display
+                    lines.Add(new MyLine
+                    {
+                        text = string.Format("{0}\t{1}", i, tDict[i].Count)
+                    });
+                }
+            }
+            MyRender.PrintRtb(richTextBox1, lines);
+        }
+
+        private void ProgramTV_DoubleClick(object sender, EventArgs e)
+        {
+
+        }
+
+        private void UpdateProgTV()
+        {
+            //throw new NotImplementedException();
+            var titleLst = BuildProgramTree();
+            m_progTreeMng.Clear();
+            m_progTreeMng.AddTitles(titleLst);
+        }
+
+        private List<MyTree.MyTitle> BuildProgramTree()
+        {
+            var progs = m_programs;
+            List<MyTree.MyTitle> titleLst = new List<MyTree.MyTitle>();
+            foreach (MyProgram prog in m_programs)
+            {
+                MyTree.MyTitle title = Prog2Title(prog);
+                titleLst.Add(title);
+            }
+            return titleLst;
+        }
+        private MyTree.MyTitle Prog2Title(MyProgram prog)
+        {
+            MyTree.MyTitle title = new MyTree.MyTitle();
+            title.title = prog.zName;
+            title.path = string.Format("{0}/{1}", prog.zPath, prog.zName);
+            title.ID = prog.ID;
+            return title;
+        }
+
+        private void TreeView1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            //throw new NotImplementedException();
+            //refresh user list
+            var zProg = progCmb.Text;
+            if (zProg != "")
+            {
+                RefreshRegTree();
+            }
+        }
+
+        private void TagLstBx_DoubleClick(object sender, EventArgs e)
+        {
+            RefreshTagLst();
+        }
+        void RefreshTagLst()
+        {
+            tagLstBx.Items.Clear();
+            var tags = m_cp.GetAllTags();
+            foreach (var tag in tags)
+            {
+                tagLstBx.Items.Add(tag);
+            }
+        }
+        private void TagLstBx_SelectedIndexChanged(object sender, ItemCheckEventArgs e)
+        {
+            List<string> tags = new List<string>();
+            //filter user by tag
+            for (int i = 0; i < tagLstBx.Items.Count; i++)
+            {
+                if (i == e.Index)
+                {
+                    if (e.NewValue == CheckState.Checked)
+                    {
+                        tags.Add(tagLstBx.Items[i].ToString());
+                    }
+                }
+                else if (tagLstBx.GetItemChecked(i))
+                {
+                    tags.Add(tagLstBx.Items[i].ToString());
+                }
+            }
+            if (tags.Count == 0)
+            {
+                //chinh thuc
+                m_users = m_cp.GetAllUsers();
+                var zProg = progCmb.Text;
+                if (zProg != "")
+                {
+                    RefreshRegTree();
+                }
+            }
+            else
+            {
+                m_users = m_cp.GetAllUsers(tags);
+                var zProg = progCmb.Text;
+                if (zProg != "")
+                {
+                    RefreshRegTree();
+                }
+            }
+        }
+
+        private void TagLstBx_Click(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void RefreshPrograms()
+        {
+            //m_cp.clear();   //clear content provider
+            List<MyProgram> progs = getProg();
+            m_programs = progs;
+            UpdateProgramCmb();
+            UpdateProgTV();
+        }
+        void UpdateProgramCmb()
+        {
+            progCmb.Items.Clear();
+            progCmb.Items.AddRange(m_programs.Select(i => i.zName).ToArray());
+        }
+
+        bool ParseOpt(string txt, out string zOpt, out int nOpt)
+        {
+            Regex reg = new Regex(@"^(\d+)( \((.*)\))?");
             var m = reg.Match(txt);
             if (!m.Success)
             {
                 MessageBox.Show("Invalid option");
-                return;
+                zOpt = null;
+                nOpt = 0;
+                return false;
             }
+            nOpt = int.Parse(m.Groups[1].Value);
+            zOpt = m.Groups[3].Value;
+            return true;
+        }
+        private void AddBtn_Click(object sender, EventArgs e)
+        {
+            int nOpt;
+            string zOpt;
+            var txt = optTxt.Text;
+            bool v = ParseOpt(txt, out zOpt, out nOpt);
+            if (!v) { return; }
 
-            var nOpt = int.Parse(m.Groups[1].Value);
-            var zOpt = m.Groups[3].Value;
             var zUserFb = userCmb.Text;
             MyUser user = m_users.Find(x => x.zUserFb == zUserFb);
             var zProg = progCmb.Text;
@@ -96,6 +459,7 @@ namespace register
             MyTree.MyTitle title = new MyTree.MyTitle();
             MyGroup grp = m_groups.Find(x => x.nGroup == user.nGroup);
             title.title = user.zUserFb;
+            title.content = string.Format("{0} ({1})", nOpt, zOpt);
             title.path = string.Format("register/{0}/{1}", grp.zGroup, user.zUserFb);
             var nRet = m_treeMng.Add(title);
             if (nRet == 1)
@@ -115,7 +479,8 @@ namespace register
                 var user = m_users.Find(x => x.zUserFb == title.title);
                 userCmb.Text = title.title;
                 optTxt.Text = zopt;
-            } else
+            }
+            else
             {
                 PreviewReport(e.Node);
             }
@@ -123,53 +488,56 @@ namespace register
 
         void PreviewReport(TreeNode tnode)
         {
-            Regex reg = new Regex(@"^(\d)( \((.*)\))?");
             //string
             string path = tnode.Tag as string;
             List<MyTree.MyTitle> lst = m_treeMng.GetAllChilds(path);
-            Dictionary<int,List<string>> dict = new Dictionary<int, List<string>>();
+            Dictionary<int, List<string>> dict = new Dictionary<int, List<string>>();
             int maxOpt = 0;
             foreach (MyTree.MyTitle title in lst)
             {
-                MyUser user = m_users.Find(x=>x.zUserFb == title.title);
+                MyUser user = m_users.Find(x => x.zUserFb == title.title);
                 int nOpt = 0;
                 string zOpt = "";
                 if (title.content != null)
                 {
-                    var m = reg.Match(title.content);
-                    nOpt = int.Parse(m.Groups[1].Value);
-                    zOpt = m.Groups[3].Value;
+                    ParseOpt(title.content, out zOpt, out nOpt);
                 }
                 if (dict.ContainsKey(nOpt))
                 {
-                    dict[nOpt].Add(user.zUserFb +" " + zOpt);
-                } else
+                    dict[nOpt].Add(user.zUserFb + " " + zOpt);
+                }
+                else
                 {
                     dict[nOpt] = new List<string>();
-                    dict[nOpt].Add(user.zUserFb +" " + zOpt);
-                    maxOpt = maxOpt<nOpt?nOpt:maxOpt;
+                    dict[nOpt].Add(user.zUserFb + " " + zOpt);
+                    maxOpt = maxOpt < nOpt ? nOpt : maxOpt;
                 }
             }
             richTextBox1.Clear();
             var old = richTextBox1.Font;
-            for(int nOpt = 0;nOpt<=maxOpt;nOpt++)
+            for (int nOpt = 0; nOpt <= maxOpt; nOpt++)
             {
                 if (!dict.ContainsKey(nOpt)) continue;
 
                 var titles = dict[nOpt];
                 //var nOpt = p.Key;
-                
+
                 richTextBox1.SelectionFont = new Font(old, FontStyle.Bold);
-                richTextBox1.SelectedText = string.Format("{0}\n",nOpt);
+                richTextBox1.SelectedText = string.Format("{0} ({1})\n", nOpt, titles.Count);
                 richTextBox1.SelectionFont = old;
-                string txt = string.Join("\n",titles);
+                string txt = string.Join("\n", titles);
                 richTextBox1.SelectedText = txt + "\n";
             }
         }
 
         private void ProgCmb_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var titleLst = BuildTree();
+            RefreshRegTree();
+        }
+
+        private void RefreshRegTree()
+        {
+            var titleLst = BuildRegTree();
             m_treeMng.Clear();
             m_treeMng.AddTitles(titleLst);
         }
@@ -177,7 +545,7 @@ namespace register
         void getCnnStr()
         {
 #if DEBUG
-            m_db = @"C:\Users\Onsiter\Google Drive\CBV\DTPTXX\tools\PTXX_NB.accdb";
+            m_db = @"C:\Users\Onsiter\Google Drive\5. ĐT PTXX NHẬT BẢN\1. Quản lý thành viên\tools\PTXX_NB.accdb";
 #else
             m_db = ConfigMng.findTmpl("PTXX_NB.accdb");
 #endif
@@ -323,7 +691,7 @@ namespace register
             Dictionary<string, MyUser> userD;
             var content = new lOleDbContentProvider();
             //var zDb = ConfigMng.findTmpl("");
-            var zDb = @"C:\Users\Onsiter\Google Drive\CBV\DTPTXX\tools\PTXX_NB.accdb";
+            var zDb = @"C:\Users\Onsiter\Google Drive\5. ĐT PTXX NHẬT BẢN\1. Quản lý thành viên\tools\PTXX_NB.accdb";
             var cnnStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=<zDb>;";
             content.initCnn(cnnStr.Replace("<zDb>", zDb));
             var userLst = content.GetAllUsers();
@@ -372,8 +740,16 @@ namespace register
         List<MyReg> getRegister()
         {
             var zProg = progCmb.Text;
-            var prog = m_programs.Find(x => x.zName == zProg);
-            List<MyReg> regs = m_cp.GetRegs(prog);
+            return getRegister(new List<string> { zProg });
+        }
+        List<MyReg> getRegister(List<string> progLst)
+        {
+            List<MyReg> regs = new List<MyReg>();
+            foreach (string zProg in progLst)
+            {
+                var prog = m_programs.Find(x => x.zName == zProg);
+                regs.AddRange(m_cp.GetRegs(prog));
+            }
             return regs;
         }
 
@@ -391,7 +767,7 @@ namespace register
             };
             public eNodeType eType;
         }
-        public List<MyTree.MyTitle> BuildTree()
+        public List<MyTree.MyTitle> BuildRegTree()
         {
             var groups = m_groups;
             var regs = getRegister();
@@ -401,7 +777,15 @@ namespace register
             Dictionary<UInt64, MyUser> userDict = new Dictionary<ulong, MyUser>();
             foreach (MyUser user in m_users)
             {
-                userDict.Add(user.ID, user);
+                if (userDict.ContainsKey(user.ID))
+                {
+
+                }
+                else
+                {
+
+                    userDict.Add(user.ID, user);
+                }
             }
 
             foreach (MyReg reg in regs)
@@ -502,6 +886,44 @@ namespace register
             }
 
             updateTree(root);
+        }
+
+        private void openFormToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            string vbs;
+#if DEBUG
+            vbs = @"C:\Users\Onsiter\Google Drive\CBV\DTPTXX\tools\dkthoikhoa.vbs";
+#else
+            vbs = ConfigMng.findTmpl("dkthoikhoa.vbs");
+#endif
+            Process scriptProc = new Process();
+            scriptProc.StartInfo.WorkingDirectory = vbs.Substring(0, vbs.LastIndexOf("\\"));
+            scriptProc.StartInfo.FileName = @"C:\Windows\SysWOW64\cscript.exe";
+            scriptProc.StartInfo.UseShellExecute = false;
+            scriptProc.StartInfo.Arguments = "dkthoikhoa.vbs";
+            scriptProc.StartInfo.CreateNoWindow = false;
+            scriptProc.StartInfo.Verb = "runas";
+            scriptProc.StartInfo.WindowStyle = ProcessWindowStyle.Normal; //prevent console window from popping up
+            scriptProc.Start();
+            //scriptProc.StartInfo.WorkingDirectory = vbs.Substring(vbs.LastIndexOf("\\")); //<---very important 
+            //scriptProc.WaitForExit(); // <-- Optional if you want program running until your script exit
+            //scriptProc.Close();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
+        }
+
+        private void programTV_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+
         }
     }
 }
