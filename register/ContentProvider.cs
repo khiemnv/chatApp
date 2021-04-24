@@ -142,11 +142,54 @@ namespace register
         public List<MyUser> GetAllUsers(List<string> tags)
         {
             List<MyUser> userLst = new List<MyUser>();
-            foreach(var tag in tags)
+            HashSet<UInt64> uids = getUserIdByTag(tags);
+            var userDict = GetUserDict();
+            foreach(UInt64 uID in uids)
             {
-                userLst.AddRange(GetAllUsers(tag));
+                if (userDict.ContainsKey(uID))
+                {
+                    var user = userDict[uID];
+                    userLst.Add(new MyUser()
+                    {
+                        ID = user.ID,
+                        zFb = user.zFb,
+                        zUser = user.zUser,
+                        nGroup = user.nGroup
+                    });
+                }
             }
             return userLst;
+        }
+        private HashSet<UInt64> getUserIdByTag(List<string> tags)
+        {
+            HashSet<UInt64> uids = new HashSet<ulong>();
+
+            var qry = "select ID from tags WHERE zTag = @zTag";
+            var cmd = new OleDbCommand(qry, m_cnn);
+            cmd.Parameters.Add("@zTag",OleDbType.Char);
+
+            var qry2 = "select * from user_tag WHERE tagID = @tagID";
+            var cmd2 = new OleDbCommand(qry2, m_cnn);
+            cmd2.Parameters.Add("@tagID",OleDbType.Numeric);
+
+            foreach(string tag in tags)
+            {
+                cmd.Parameters["@zTag"].Value = tag;
+                UInt64 tagID = Convert.ToUInt64( cmd.ExecuteScalar());
+                
+                cmd2.Parameters["@tagID"].Value = tagID;
+                var reader = cmd2.ExecuteReader();
+                while (reader.Read())
+                {
+                    UInt64 uID = Convert.ToUInt64(reader["userID"]);
+                    if (!uids.Contains(uID))
+                    {
+                        uids.Add(uID);
+                    }
+                }
+                reader.Close();
+            }
+            return uids;
         }
         public List<MyUser> GetAllUsers(string tag)
         { 
@@ -171,14 +214,17 @@ namespace register
                 while (reader.Read())
                 {
                     UInt64 uID = Convert.ToUInt64(reader["userID"]);
-                    var user = userDict[uID];
-                    userLst.Add(new MyUser()
+                    if (userDict.ContainsKey(uID))
                     {
-                        ID = user.ID,
-                        zFb = user.zFb,
-                        zUser = user.zUser,
-                        nGroup = user.nGroup
-                    });
+                        var user = userDict[uID];
+                        userLst.Add(new MyUser()
+                        {
+                            ID = user.ID,
+                            zFb = user.zFb,
+                            zUser = user.zUser,
+                            nGroup = user.nGroup
+                        });
+                    }
                 }
                 reader.Close();
             }
@@ -199,8 +245,9 @@ namespace register
             }
             else
             {
-                var addCmd = new OleDbCommand("INSERT INTO paths (zPath) VALUES (?)"); 
-                addCmd.Parameters.Add(new OleDbParameter("",path));
+                var addCmd = new OleDbCommand("INSERT INTO paths (zPath) VALUES (@zPath)", m_cnn); 
+                addCmd.Parameters.Add(new OleDbParameter("@zPath",OleDbType.Char));
+                addCmd.Parameters["@zPath"].Value = path;
                 var n = addCmd.ExecuteNonQuery();
 
                 addCmd.CommandText = "Select @@Identity";
@@ -309,7 +356,7 @@ namespace register
         {
             Dictionary<ulong, MyUser> userDict = new Dictionary<ulong, MyUser>();
             List<MyUser> userLst = new List<MyUser>();
-            var qry = "select * from users";
+            var qry = "select * from users where bOut = 0";
             var cmd = new OleDbCommand(qry, m_cnn);
             var reader = cmd.ExecuteReader();
             while (reader.Read())
