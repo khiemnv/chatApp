@@ -115,6 +115,89 @@ namespace register
             //m_userDict.Clear();
         }
 
+        public List<string> GetUserTags(MyUser u)
+        {
+            List<UInt64> tagIds = new List<ulong>();
+
+            var cmd = new OleDbCommand("select * from user_tag where userID = @userID", m_cnn);
+            cmd.Parameters.Add(new OleDbParameter("@userID", OleDbType.Numeric));
+            cmd.Parameters["@userID"].Value = u.ID;
+            var rd = cmd.ExecuteReader();
+            while (rd.Read())
+            {
+                var tagId = Convert.ToUInt64(rd["tagID"]);
+                tagIds.Add(tagId);
+            }
+            return GetAllTags(tagIds);
+        }
+
+        private List<string> GetAllTags(List<UInt64> tagIds)
+        {
+            List<string> tags = new List<string>();
+            var qry = "select zTag from tags WHERE ID = @ID";
+            var cmd = new OleDbCommand(qry, m_cnn);
+            cmd.Parameters.Add("@ID", OleDbType.Numeric);
+            foreach (var tagId in tagIds)
+            {
+                cmd.Parameters["@ID"].Value = tagId;
+                var tag = Convert.ToString(cmd.ExecuteScalar());
+                tags.Add(tag);
+            }
+            return tags;
+        }
+
+        public bool UpdateUserTag(MyUser u, List<string> tags)
+        {
+            var tagIds = new List<UInt64>();
+            var qry = "select ID from tags WHERE zTag = @zTag";
+            var cmd = new OleDbCommand(qry, m_cnn);
+            cmd.Parameters.Add("@zTag", OleDbType.Char);
+            foreach (string tag in tags)
+            {
+                cmd.Parameters["@zTag"].Value = tag;
+                UInt64 tagID = Convert.ToUInt64(cmd.ExecuteScalar());
+                tagIds.Add(tagID);
+            }
+            return UpdateUserTag(u.ID, tagIds);
+        }
+        public bool UpdateUserTag(UInt64 uId, List<UInt64>tagIds)
+        {
+            var cmd = new OleDbCommand("select * from user_tag where userID = @userID", m_cnn);
+            cmd.Parameters.Add(new OleDbParameter("@userID", OleDbType.Numeric));
+            cmd.Parameters["@userID"].Value = uId;
+            var rd = cmd.ExecuteReader();
+            List<UInt64> rm = new List<ulong>();
+            List<UInt64> added = new List<ulong>();
+
+            var cmdrm = new OleDbCommand("delete from user_tag where ID = @ID", m_cnn);
+            cmdrm.Parameters.Add(new OleDbParameter("@ID", OleDbType.Numeric));
+            while (rd.Read())
+            {
+                var tagId = Convert.ToUInt64(rd["tagID"]);
+                if (tagIds.FindIndex((v)=>v == tagId) == -1)
+                {
+                    rm.Add(tagId);
+                    cmdrm.Parameters["@ID"].Value = Convert.ToUInt64(rd["ID"]);
+                    var n = cmdrm.ExecuteNonQuery();
+                } else
+                {
+                    added.Add(tagId);
+                    tagIds.Remove(tagId);
+                }
+            }
+
+            //add
+            foreach(UInt64 tagId in tagIds)
+            {
+                var cmd2 = new OleDbCommand("insert into user_tag (userID, tagID) values (@userID, @tagID)", m_cnn);
+                cmd2.Parameters.Add(new OleDbParameter("@userID", OleDbType.Numeric));
+                cmd2.Parameters["@userID"].Value = uId;
+                cmd2.Parameters.Add(new OleDbParameter("@tagID", OleDbType.Numeric));
+                cmd2.Parameters["@tagID"].Value = tagId;
+                var n = cmd2.ExecuteNonQuery();
+            }
+            return true;
+        }
         public MyUser GetUser(UInt64 uID)
         {
             return null;

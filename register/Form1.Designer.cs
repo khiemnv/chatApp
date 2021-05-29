@@ -43,11 +43,12 @@ namespace register
             this.optTxt = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.programTV = new System.Windows.Forms.TreeView();
             this.tagLstBx = new System.Windows.Forms.CheckedListBox();
             this.label4 = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.programTV = new System.Windows.Forms.TreeView();
+            this.usersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -72,7 +73,8 @@ namespace register
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.usersToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(608, 24);
@@ -91,14 +93,14 @@ namespace register
             // openDbToolStripMenuItem
             // 
             this.openDbToolStripMenuItem.Name = "openDbToolStripMenuItem";
-            this.openDbToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+            this.openDbToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openDbToolStripMenuItem.Text = "OpenDb";
             this.openDbToolStripMenuItem.Click += new System.EventHandler(this.openDbToolStripMenuItem_Click);
             // 
             // openFormToolStripMenuItem
             // 
             this.openFormToolStripMenuItem.Name = "openFormToolStripMenuItem";
-            this.openFormToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
+            this.openFormToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openFormToolStripMenuItem.Text = "OpenForm";
             this.openFormToolStripMenuItem.Click += new System.EventHandler(this.openFormToolStripMenuItem_Click);
             // 
@@ -200,31 +202,6 @@ namespace register
             this.splitContainer1.SplitterDistance = 202;
             this.splitContainer1.TabIndex = 12;
             // 
-            // tagLstBx
-            // 
-            this.tagLstBx.FormattingEnabled = true;
-            this.tagLstBx.Location = new System.Drawing.Point(264, 29);
-            this.tagLstBx.Name = "tagLstBx";
-            this.tagLstBx.Size = new System.Drawing.Size(120, 88);
-            this.tagLstBx.TabIndex = 14;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(237, 36);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(21, 12);
-            this.label4.TabIndex = 13;
-            this.label4.Text = "tag";
-            // 
-            // richTextBox1
-            // 
-            this.richTextBox1.Location = new System.Drawing.Point(-1, 206);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(400, 114);
-            this.richTextBox1.TabIndex = 12;
-            this.richTextBox1.Text = "";
-            // 
             // splitContainer2
             // 
             this.splitContainer2.Location = new System.Drawing.Point(24, 21);
@@ -250,6 +227,38 @@ namespace register
             this.programTV.Size = new System.Drawing.Size(149, 136);
             this.programTV.TabIndex = 0;
             this.programTV.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.programTV_AfterSelect);
+            // 
+            // tagLstBx
+            // 
+            this.tagLstBx.FormattingEnabled = true;
+            this.tagLstBx.Location = new System.Drawing.Point(264, 29);
+            this.tagLstBx.Name = "tagLstBx";
+            this.tagLstBx.Size = new System.Drawing.Size(120, 88);
+            this.tagLstBx.TabIndex = 14;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(237, 36);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(21, 12);
+            this.label4.TabIndex = 13;
+            this.label4.Text = "tag";
+            // 
+            // richTextBox1
+            // 
+            this.richTextBox1.Location = new System.Drawing.Point(-1, 206);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(400, 114);
+            this.richTextBox1.TabIndex = 12;
+            this.richTextBox1.Text = "";
+            // 
+            // usersToolStripMenuItem
+            // 
+            this.usersToolStripMenuItem.Name = "usersToolStripMenuItem";
+            this.usersToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
+            this.usersToolStripMenuItem.Text = "users";
+            this.usersToolStripMenuItem.Click += new System.EventHandler(this.usersToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -297,6 +306,7 @@ namespace register
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.TreeView programTV;
+        private System.Windows.Forms.ToolStripMenuItem usersToolStripMenuItem;
     }
 }
 

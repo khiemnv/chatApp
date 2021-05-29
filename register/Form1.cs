@@ -545,7 +545,7 @@ namespace register
         void getCnnStr()
         {
 #if DEBUG
-            m_db = @"C:\Users\Onsiter\Google Drive\5. ĐT PTXX NHẬT BẢN\1. Quản lý thành viên\tools\PTXX_NB.accdb";
+            m_db = @"C:\Users\Khiem\Google ドライブ\share\5. ĐT PTXX NHẬT BẢN\1. Quản lý thành viên\tools\PTXX_NB.accdb";
 #else
             m_db = ConfigMng.findTmpl("PTXX_NB.accdb");
 #endif
@@ -924,6 +924,13 @@ namespace register
         private void programTV_AfterSelect(object sender, TreeViewEventArgs e)
         {
 
+        }
+
+        private void usersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var userform = new FormUser();
+            userform.m_cp = m_cp;
+            userform.ShowDialog();
         }
     }
 }
