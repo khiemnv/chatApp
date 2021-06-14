@@ -122,6 +122,9 @@ namespace register
             checkOutMid.Click += OnCheckOut;
             var checkInMi = fileToolStripMenuItem.DropDownItems.Add("CheckIn");
             checkInMi.Click += OnCheckIn;
+
+            //default add button
+            this.AcceptButton = addBtn;
         }
 
         private void OnCrtNewProg(object sender, EventArgs e)
@@ -158,6 +161,10 @@ namespace register
                         var title = Prog2Title(newProg);
                         m_programs.Add(newProg);
                         m_progTreeMng.Add(title);
+
+                        //update combo
+                        progCmb.Items.Insert(0, newProg.zName);
+                        progCmb.SelectedIndex = 0;
                     }
                 }
             }
@@ -931,6 +938,12 @@ namespace register
             var userform = new FormUser();
             userform.m_cp = m_cp;
             userform.ShowDialog();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            //refresh user
+            m_users = getUsers();
         }
     }
 }

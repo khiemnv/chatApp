@@ -117,10 +117,21 @@ namespace register
 
         private void AddUpdateUser(object sender, EventArgs e)
         {
-            m_user = new MyUser()
+            if (id.Text == "")
             {
-                ID = Convert.ToUInt64(id.Text)
-            };
+                m_user = new MyUser();
+                m_user.zUser = zUser.Text;
+                m_user.zFb = zFb.Text;
+                m_user.nGroup = int.Parse(nGroup.Text);
+                m_cp.AddUser(m_user);
+            }
+            else
+            {
+                m_user = new MyUser()
+                {
+                    ID = Convert.ToUInt64(id.Text)
+                };
+            }
             List<string> tagLst = new List<string>();
             foreach( var i in tags.CheckedItems)
             {

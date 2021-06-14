@@ -34,6 +34,7 @@ namespace register
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openDbToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFormToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.usersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.userCmb = new System.Windows.Forms.ComboBox();
             this.progCmb = new System.Windows.Forms.ComboBox();
@@ -48,7 +49,6 @@ namespace register
             this.tagLstBx = new System.Windows.Forms.CheckedListBox();
             this.label4 = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
-            this.usersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -93,16 +93,23 @@ namespace register
             // openDbToolStripMenuItem
             // 
             this.openDbToolStripMenuItem.Name = "openDbToolStripMenuItem";
-            this.openDbToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openDbToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
             this.openDbToolStripMenuItem.Text = "OpenDb";
             this.openDbToolStripMenuItem.Click += new System.EventHandler(this.openDbToolStripMenuItem_Click);
             // 
             // openFormToolStripMenuItem
             // 
             this.openFormToolStripMenuItem.Name = "openFormToolStripMenuItem";
-            this.openFormToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openFormToolStripMenuItem.Size = new System.Drawing.Size(131, 22);
             this.openFormToolStripMenuItem.Text = "OpenForm";
             this.openFormToolStripMenuItem.Click += new System.EventHandler(this.openFormToolStripMenuItem_Click);
+            // 
+            // usersToolStripMenuItem
+            // 
+            this.usersToolStripMenuItem.Name = "usersToolStripMenuItem";
+            this.usersToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
+            this.usersToolStripMenuItem.Text = "users";
+            this.usersToolStripMenuItem.Click += new System.EventHandler(this.usersToolStripMenuItem_Click);
             // 
             // treeView1
             // 
@@ -147,6 +154,7 @@ namespace register
             this.label2.Size = new System.Drawing.Size(27, 12);
             this.label2.TabIndex = 9;
             this.label2.Text = "user";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label3
             // 
@@ -252,13 +260,6 @@ namespace register
             this.richTextBox1.Size = new System.Drawing.Size(400, 114);
             this.richTextBox1.TabIndex = 12;
             this.richTextBox1.Text = "";
-            // 
-            // usersToolStripMenuItem
-            // 
-            this.usersToolStripMenuItem.Name = "usersToolStripMenuItem";
-            this.usersToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
-            this.usersToolStripMenuItem.Text = "users";
-            this.usersToolStripMenuItem.Click += new System.EventHandler(this.usersToolStripMenuItem_Click);
             // 
             // Form1
             // 

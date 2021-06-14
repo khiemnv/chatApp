@@ -146,6 +146,20 @@ namespace register
             return tags;
         }
 
+        public void AddUser(MyUser user)
+        {
+            var cmd = new OleDbCommand("INSERT INTO users (zUser, zFb, nGroup,registedDate) VALUES (@zUser, @zFb, @nGroup, @registedDate)", m_cnn);
+            cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
+            cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
+            cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
+            cmd.Parameters.Add("@registedDate", OleDbType.Date).Value = DateTime.Now;
+            var n = cmd.ExecuteNonQuery();
+            if (n == 1)
+            {
+                user.ID = Convert.ToUInt64(new OleDbCommand("Select @@Identity", m_cnn).ExecuteScalar().ToString());
+            }
+        }
+
         public bool UpdateUserTag(MyUser u, List<string> tags)
         {
             var tagIds = new List<UInt64>();
@@ -351,6 +365,10 @@ namespace register
             cmd.Parameters["@startDate"].Value = myProgram.startDate;
             cmd.Parameters["@pathID"].Value = pathID;
             var n = cmd.ExecuteNonQuery();
+
+            //update id
+            var newID = Convert.ToUInt64(new OleDbCommand("Select @@Identity", m_cnn).ExecuteScalar().ToString());
+            myProgram.ID = newID;
             return n == 1;
         }
 
