@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Drawing;
@@ -191,6 +192,54 @@ namespace register
                 }
             }
             return null;
+        }
+
+        class MyCfgItem
+        {
+            public string key;
+            public string value;
+        }
+        static List<MyCfgItem> s_cfgItems;
+        public static object cfgRead(string key)
+        {
+            try
+            {
+                if (s_cfgItems == null)
+                {
+                    string path = findTmpl("cfg.json");
+                    s_cfgItems = JsonConvert.DeserializeObject<List<MyCfgItem>>(File.ReadAllText(path));
+                }
+                var obj = s_cfgItems.Find(x=>x.key == key);
+                return obj.value;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static void cfgWrite(string key, string value)
+        {
+            string path = findTmpl("cfg.json");
+            if (s_cfgItems == null)
+            {
+                if (path == null)
+                {
+                    path = Directory.GetCurrentDirectory() + "\\cfg.json";
+                    s_cfgItems = new List<MyCfgItem>();
+                }
+                else
+                {
+                    s_cfgItems = JsonConvert.DeserializeObject<List<MyCfgItem>>(File.ReadAllText(path));
+                }
+            }
+            var obj = s_cfgItems.Find(x => x.key == key);
+            if (obj == null)
+            {
+                obj = new MyCfgItem() { key = key };
+                s_cfgItems.Add(obj);
+            }
+            obj.value = value;
+            File.WriteAllText(path,JsonConvert.SerializeObject(s_cfgItems));
         }
     }
 }

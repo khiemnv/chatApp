@@ -552,7 +552,7 @@ namespace register
         void getCnnStr()
         {
 #if DEBUG
-            m_db = @"C:\Users\Khiem\Google ドライブ\share\5. ĐT PTXX NHẬT BẢN\1. Quản lý thành viên\tools\PTXX_NB.accdb";
+            m_db = ConfigMng.cfgRead("zDb") as string;
 #else
             m_db = ConfigMng.findTmpl("PTXX_NB.accdb");
 #endif
@@ -564,6 +564,9 @@ namespace register
             else
             {
                 OpenDbDlg();
+                #if DEBUG
+                ConfigMng.cfgWrite("zDb",m_db);
+                #endif
             }
         }
         bool OpenDbDlg()
@@ -649,6 +652,12 @@ namespace register
                 userCmb.Text = oldTxt;
                 userCmb.SelectionStart = oldTxt.Length;
                 userCmb.SelectionLength = 0;
+
+                if( res.items.Length == 1)
+                {
+                    userCmb.Text = res.items[0];
+                    userCmb.DroppedDown = false;
+                }
             }
             m_busy = false;
             //if (m_maps == null) { 
@@ -697,8 +706,8 @@ namespace register
         {
             Dictionary<string, MyUser> userD;
             var content = new lOleDbContentProvider();
-            //var zDb = ConfigMng.findTmpl("");
-            var zDb = @"C:\Users\Onsiter\Google Drive\5. ĐT PTXX NHẬT BẢN\1. Quản lý thành viên\tools\PTXX_NB.accdb";
+            ConfigMng.cfgRead("zDb");
+            var zDb = ConfigMng.cfgRead("zDb") as string;
             var cnnStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=<zDb>;";
             content.initCnn(cnnStr.Replace("<zDb>", zDb));
             var userLst = content.GetAllUsers();
