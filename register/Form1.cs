@@ -463,6 +463,10 @@ namespace register
             myReg.zNote = zOpt;
             int ret = m_cp.AddUpdateReg(myReg);
 
+            //add to ricktext
+            richTextBox1.SelectedText = user.zUserFb + string.Format("({0}-{1})\n",nOpt, zOpt);
+            richTextBox1.ScrollToCaret();
+
             MyTree.MyTitle title = new MyTree.MyTitle();
             MyGroup grp = m_groups.Find(x => x.nGroup == user.nGroup);
             title.title = user.zUserFb;
