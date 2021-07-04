@@ -93,6 +93,8 @@ namespace register
             sc.Panel1.Controls.Add(tv);
         }
 
+        #region edit_user
+        TreeNode m_editingNode;
         private void ShowSelectedUser(object sender, TreeNodeMouseClickEventArgs e)
         {
             MyUser u = (MyUser)e.Node.Tag;
@@ -115,7 +117,7 @@ namespace register
                     tags.SetItemChecked(i, false);
                 }
             }
-
+            m_editingNode = e.Node;
         }
 
         private void AddUpdateUser(object sender, EventArgs e)
@@ -142,7 +144,8 @@ namespace register
                 user.ID= Convert.ToUInt64(id.Text);
                 m_cp.UpdateUser(user);
 
-                var n = tv.Nodes.Find(old,true);
+                var n = tv.Nodes.Find(user.ID.ToString(),true);
+                Debug.Assert(n[0] == m_editingNode);
                 n[0].Text = user.zUserFb;
                 n[0].Tag = user;
                 m_user = user;
@@ -155,7 +158,7 @@ namespace register
             }
             m_cp.UpdateUserTag(m_user, tagLst);
         }
-
+        #endregion
         private void LoadData(object sender, EventArgs e)
         {
             var tagLst = m_cp.GetAllTags();
@@ -167,7 +170,7 @@ namespace register
             var userLst = m_cp.GetAllUsers();
             foreach (MyUser u in userLst)
             {
-                var n = tv.Nodes.Add(u.zUserFb);
+                var n = tv.Nodes.Add(u.ID.ToString(),u.zUserFb);
                 n.Tag = u;
             }
         }
