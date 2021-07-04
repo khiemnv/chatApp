@@ -160,6 +160,7 @@
     <Compile Include="MyRender.cs" />
     <Compile Include="MyTree.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Progress.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FormUser.cs">
       <SubType>Form</SubType>

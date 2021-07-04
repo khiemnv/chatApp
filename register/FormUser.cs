@@ -76,6 +76,7 @@ namespace register
 
             lbl = new Label() { Text = "ID" };
             id = new TextBox();
+            id.ReadOnly = true;
             tlp.Controls.Add(lbl, iCol, ++iRow);
             tlp.Controls.Add(id, iCol + 1, iRow);
 
@@ -99,7 +100,8 @@ namespace register
             zFb.Text = u.zFb;
             id.Text = u.ID.ToString();
             nGroup.Text = u.nGroup.ToString();
-            //
+            m_user = u;
+
             //birthDate.Value = u.birthDate
             var tagLst = m_cp.GetUserTags(u);
             for(int i = 0;i< tags.Items.Count;i++)
@@ -113,6 +115,7 @@ namespace register
                     tags.SetItemChecked(i, false);
                 }
             }
+
         }
 
         private void AddUpdateUser(object sender, EventArgs e)
@@ -124,13 +127,26 @@ namespace register
                 m_user.zFb = zFb.Text;
                 m_user.nGroup = int.Parse(nGroup.Text);
                 m_cp.AddUser(m_user);
+                var n = tv.Nodes.Add(m_user.zUserFb);
+                n.Tag = m_user;
+                n.EnsureVisible();
             }
             else
             {
-                m_user = new MyUser()
-                {
-                    ID = Convert.ToUInt64(id.Text)
-                };
+                var old = m_user.zUserFb;
+
+                var user = new MyUser();
+                user.zUser = zUser.Text;
+                user.zFb = zFb.Text;
+                user.nGroup = int.Parse(nGroup.Text);
+                user.ID= Convert.ToUInt64(id.Text);
+                m_cp.UpdateUser(user);
+
+                var n = tv.Nodes.Find(old,true);
+                n[0].Text = user.zUserFb;
+                n[0].Tag = user;
+                m_user = user;
+                n[0].EnsureVisible();
             }
             List<string> tagLst = new List<string>();
             foreach( var i in tags.CheckedItems)

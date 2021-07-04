@@ -8,13 +8,16 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace register
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form,ICursor
     {
+        BackgroundWorker m_work;
+
         MyTree m_treeMng;
         lOleDbContentProvider m_cp;
         List<MyUser> p_users;
@@ -98,7 +101,7 @@ namespace register
             var programTV_menu = new ContextMenuStrip();
             programTV.ContextMenuStrip = programTV_menu;
             var refreshProgMi = programTV_menu.Items.Add("refresh programs");
-            refreshProgMi.Click += (s,ev) => {RefreshPrograms(); };
+            refreshProgMi.Click += (s,ev) => {RefreshPrograms2(); };
 
             var statiProgMi = programTV_menu.Items.Add("static");
             statiProgMi.Click += StaticProgMi_Click;
@@ -415,8 +418,65 @@ namespace register
             //throw new NotImplementedException();
         }
 
-        private void RefreshPrograms()
+        Int64 m_lastId = 0;
+        string m_msgStatus;
+        public void setStatus(string msg)
         {
+            m_msgStatus = msg;
+        }
+        public string getStatus()
+        {
+            return m_msgStatus;
+        }
+        public delegate void taskCallback1(object data);
+        public delegate void taskCallback0();
+        public Int64 getPos()
+        {
+            return m_lastId;
+        }
+        public void setPos(Int64 pos) { m_lastId = pos; }
+        public event EventHandler ProgessCompleted;
+        protected virtual void OnProgessCompleted(EventArgs e)
+        {
+            if (ProgessCompleted != null)
+            {
+                ProgessCompleted(this, e);
+            }
+        }
+        private void RefreshPrograms2()
+        {
+             setPos(0);
+
+            taskCallback0 showProgress = () =>
+            {
+                ProgressDlg prg = new ProgressDlg();
+                prg.TopMost = true;
+                prg.m_cursor = this;
+                prg.m_endPos = 1000;
+                prg.m_scale = 1;
+                prg.m_descr = "Getting data ...";
+                prg.ShowDialog();
+                prg.Dispose();
+                OnProgessCompleted(EventArgs.Empty);
+            };
+
+            taskCallback0 getData = () =>
+            {
+                setStatus("start");
+                for (int i = 0;i<1000;i++)
+                {
+                    Thread.Sleep(10);
+                    setPos(i);
+                    setStatus("processing");
+                }
+                setPos(1000);
+                setStatus("completed");
+            };
+
+            Task t = Task.Run(() => showProgress());
+            this.Invoke(getData);
+        }
+        private void RefreshPrograms() { 
             //m_cp.clear();   //clear content provider
             List<MyProgram> progs = getProg();
             m_programs = progs;

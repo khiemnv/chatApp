@@ -159,6 +159,16 @@ namespace register
                 user.ID = Convert.ToUInt64(new OleDbCommand("Select @@Identity", m_cnn).ExecuteScalar().ToString());
             }
         }
+        public int UpdateUser(MyUser user)
+        {
+            var cmd = new OleDbCommand("UPDATE users SET zUser=@zUser, zFb=@zFb, nGroup=@nGroup WHERE ID=@ID", m_cnn);
+            cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
+            cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
+            cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
+            cmd.Parameters.Add("@ID", OleDbType.Numeric).Value = user.ID;
+            var n = cmd.ExecuteNonQuery();
+            return n;
+        }
 
         public bool UpdateUserTag(MyUser u, List<string> tags)
         {
