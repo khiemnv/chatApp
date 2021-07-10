@@ -24,7 +24,7 @@ namespace register
         public ContentSync()
         {
             //load config
-            string path = ConfigMng.findTmpl("fb.cfg");
+            string path = ConfigMng.FindTmpl("fb.cfg");
             string txt = File.ReadAllText(path);
             ConfigCS cfg = JsonConvert.DeserializeObject<ConfigCS>(txt);
             ApiKey = cfg.ApiKey;

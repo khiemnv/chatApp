@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace register
@@ -181,7 +183,7 @@ namespace register
         //    xwriter.Close();
         //}
 
-        public static string findTmpl(string tmpl)
+        public static string FindTmpl(string tmpl)
         {
             var path = Environment.CurrentDirectory;
             while (path != null)
@@ -200,26 +202,33 @@ namespace register
             public string value;
         }
         static List<MyCfgItem> s_cfgItems;
-        public static object cfgRead(string key)
+        public static object CfgRead(string key)
         {
             try
             {
                 if (s_cfgItems == null)
                 {
-                    string path = findTmpl("cfg.json");
+                    string path = FindTmpl("cfg.json");
                     s_cfgItems = JsonConvert.DeserializeObject<List<MyCfgItem>>(File.ReadAllText(path));
                 }
                 var obj = s_cfgItems.Find(x=>x.key == key);
-                return obj.value;
+                if (obj != null)
+                {
+                    return obj.value;
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch
             {
                 return null;
             }
         }
-        public static void cfgWrite(string key, string value)
+        public static void CfgWrite(string key, string value)
         {
-            string path = findTmpl("cfg.json");
+            string path = FindTmpl("cfg.json");
             if (s_cfgItems == null)
             {
                 if (path == null)
@@ -240,6 +249,93 @@ namespace register
             }
             obj.value = value;
             File.WriteAllText(path,JsonConvert.SerializeObject(s_cfgItems));
+        }
+        public static Font GetFont()
+        {
+            Font f = (Font)CfgRead("font");
+            return (f != null) ? f : new Font("Arial", 10);
+        }
+        public static Button CrtButton()
+        {
+            var btn = new Button();
+            btn.Font = GetFont();
+            return btn;
+        }
+        public static Label CrtLabel()
+        {
+            var ctrl = new Label();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+        public static CheckedListBox CrtCheckedListBox()
+        {
+            var ctrl = new CheckedListBox();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+        public static TextBox CrtTextBox()
+        {
+            var ctrl = new TextBox();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+        public static CheckBox CrtCheckBox()
+        {
+            var ctrl = new CheckBox();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+        public static ComboBox CrtComboBox()
+        {
+            var ctrl = new ComboBox();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+        public static DataGridView CrtDGV()
+        {
+            var ctrl = new DataGridView();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+        public static MenuStrip CrtMenuStrip()
+        {
+            var ctrl = new MenuStrip();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+        public static ToolStripMenuItem CrtStripMI()
+        {
+            var ctrl = new ToolStripMenuItem();
+            ctrl.Font = GetFont();
+            return ctrl;
+        }
+
+        public static string GetDateFormat() { return "yyyy-MM-dd"; }
+        public static string GetDisplayDateFormat() { return "dd/MM/yyyy"; }
+        public static bool parseDisplayDate(string txt, out DateTime dt) {
+            //txt = "dd/MM/yyyy"
+            bool ret = false;
+            dt = DateTime.Now;
+            do
+            {
+                var arr = txt.Split('/');
+                if (arr.Length != 3) break;
+                //year 1-9999, month 1-12, day
+                int y, m, d;
+                if (!int.TryParse(arr[2], out y)) break;
+                if (!int.TryParse(arr[1], out m)) break;
+                if (!int.TryParse(arr[0], out d)) break;
+                try
+                {
+                    dt = new DateTime(y, m, d);
+                    ret = true;
+                }
+                catch
+                {
+                    Debug.Assert(false, "invalid date string");
+                }
+            } while (false);
+            return ret;
         }
     }
 }

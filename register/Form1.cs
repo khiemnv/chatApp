@@ -616,7 +616,7 @@ namespace register
         void getCnnStr()
         {
 #if DEBUG
-            m_db = ConfigMng.cfgRead("zDb") as string;
+            m_db = ConfigMng.CfgRead("zDb") as string;
 #else
             m_db = ConfigMng.findTmpl("PTXX_NB.accdb");
 #endif
@@ -629,7 +629,7 @@ namespace register
             {
                 OpenDbDlg();
                 #if DEBUG
-                ConfigMng.cfgWrite("zDb",m_db);
+                ConfigMng.CfgWrite("zDb",m_db);
                 #endif
             }
         }
@@ -770,8 +770,8 @@ namespace register
         {
             Dictionary<string, MyUser> userD;
             var content = new lOleDbContentProvider();
-            ConfigMng.cfgRead("zDb");
-            var zDb = ConfigMng.cfgRead("zDb") as string;
+            ConfigMng.CfgRead("zDb");
+            var zDb = ConfigMng.CfgRead("zDb") as string;
             var cnnStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=<zDb>;";
             content.initCnn(cnnStr.Replace("<zDb>", zDb));
             var userLst = content.GetAllUsers();

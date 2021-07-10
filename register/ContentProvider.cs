@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -62,8 +63,23 @@ namespace register
         public string zUser;
         public string zFb;
         public int nGroup;
+        public string zZalo;
+        public DateTime birthDate;
+        public string zPhapDanh;
 
         public string zUserFb { get { return zUser + " - " + zFb; } }
+
+        public MyUser copy()
+        {
+            return new MyUser()
+            {
+                zUser = this.zUser,
+                zFb = this.zFb,
+                zZalo = this.zZalo,
+                ID = this.ID,
+                nGroup = this.nGroup
+            };
+        }
     }
 
     public class MyProgram
@@ -148,9 +164,10 @@ namespace register
 
         public void AddUser(MyUser user)
         {
-            var cmd = new OleDbCommand("INSERT INTO users (zUser, zFb, nGroup,registedDate) VALUES (@zUser, @zFb, @nGroup, @registedDate)", m_cnn);
+            var cmd = new OleDbCommand("INSERT INTO users (zUser, zFb, zZalo, nGroup,registedDate) VALUES (@zUser, @zFb, @zZalo, @nGroup, @registedDate)", m_cnn);
             cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
             cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
+            cmd.Parameters.Add("@zZalo", OleDbType.VarChar).Value = user.zZalo;
             cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
             cmd.Parameters.Add("@registedDate", OleDbType.Date).Value = DateTime.Now;
             var n = cmd.ExecuteNonQuery();
@@ -161,9 +178,10 @@ namespace register
         }
         public int UpdateUser(MyUser user)
         {
-            var cmd = new OleDbCommand("UPDATE users SET zUser=@zUser, zFb=@zFb, nGroup=@nGroup WHERE ID=@ID", m_cnn);
+            var cmd = new OleDbCommand("UPDATE users SET zUser=@zUser, zFb=@zFb, zZalo=@zZalo, nGroup=@nGroup WHERE ID=@ID", m_cnn);
             cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
             cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
+            cmd.Parameters.Add("@zZalo", OleDbType.VarChar).Value = user.zZalo;
             cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
             cmd.Parameters.Add("@ID", OleDbType.Numeric).Value = user.ID;
             var n = cmd.ExecuteNonQuery();
@@ -240,7 +258,8 @@ namespace register
                     ID = uID,
                     zFb = Convert.ToString(reader["zFb"]),
                     zUser = Convert.ToString(reader["zUser"]),
-                    nGroup = int.Parse(reader["nGroup"].ToString())
+                    nGroup = int.Parse(reader["nGroup"].ToString()),
+                    zZalo = reader["zZalo"].ToString()
                 });
             }
             reader.Close();
@@ -256,13 +275,7 @@ namespace register
                 if (userDict.ContainsKey(uID))
                 {
                     var user = userDict[uID];
-                    userLst.Add(new MyUser()
-                    {
-                        ID = user.ID,
-                        zFb = user.zFb,
-                        zUser = user.zUser,
-                        nGroup = user.nGroup
-                    });
+                    userLst.Add(user.copy());
                 }
             }
             return userLst;
@@ -324,13 +337,7 @@ namespace register
                     if (userDict.ContainsKey(uID))
                     {
                         var user = userDict[uID];
-                        userLst.Add(new MyUser()
-                        {
-                            ID = user.ID,
-                            zFb = user.zFb,
-                            zUser = user.zUser,
-                            nGroup = user.nGroup
-                        });
+                        userLst.Add(user.copy());
                     }
                 }
                 reader.Close();
@@ -733,6 +740,123 @@ namespace register
                 ids.Add(Convert.ToUInt64(rd["ID"]));
             }
             return ids;
+        }
+    }
+
+    public class TableInfo
+    {
+        //#define col_class
+
+        [DataContract(Name = "ColInfo")]
+        public class lColInfo
+        {
+            [DataContract(Name = "ColType")]
+            public enum lColType
+            {
+                [EnumMember]
+                text,
+                [EnumMember]
+                dateTime,
+                [EnumMember]
+                num,
+                [EnumMember]
+                currency,
+                [EnumMember]
+                uniqueText,
+                [EnumMember]
+                map,
+            };
+            [DataMember(Name = "field", EmitDefaultValue = false)]
+            public string m_field;
+            [DataMember(Name = "alias", EmitDefaultValue = false)]
+            public string m_alias;
+            [DataMember(Name = "lookupTbl", EmitDefaultValue = false)]
+            public string m_lookupTbl;
+            [DataMember(Name = "type", EmitDefaultValue = false)]
+            public lColType m_type;
+            [DataMember(Name = "visible", EmitDefaultValue = false)]
+            public bool m_visible;
+
+            private void init(string field, string alias, lColType type, string lookupTbl, bool visible)
+            {
+                m_lookupTbl = lookupTbl;
+                m_field = field;
+                m_alias = alias;
+                m_type = type;
+                m_visible = visible;
+            }
+            public lColInfo(string field, string alias, lColType type, string lookupTbl, bool visible)
+            {
+                init(field, alias, type, lookupTbl, visible);
+            }
+            public lColInfo(string field, string alias, lColType type, string lookupTbl)
+            {
+                init(field, alias, type, lookupTbl, true);
+            }
+            public lColInfo(string field, string alias, lColType type)
+            {
+                init(field, alias, type, null, true);
+            }
+        };
+
+        [DataMember(Name = "cols", EmitDefaultValue = false)]
+        public lColInfo[] m_cols;
+        [DataMember(Name = "name", EmitDefaultValue = false)]
+        public string m_tblName;
+        [DataMember(Name = "alias", EmitDefaultValue = false)]
+        public string m_tblAlias;
+        [DataMember(Name = "crtSql", EmitDefaultValue = false)]
+        public string m_crtQry;
+
+        public virtual void LoadData()
+        {
+
+        }
+
+        public int getColIndex(string colName)
+        {
+            int i = 0;
+            foreach (lColInfo col in m_cols)
+            {
+                if (col.m_field == colName)
+                {
+                    return i;
+                }
+                i++;
+            }
+            return -1;
+        }
+    }
+    public class UserTableInfo: TableInfo
+    {
+        public UserTableInfo()
+        {
+            m_tblName = "users";
+            m_tblAlias = "Thanh Vien";
+            m_crtQry = "CREATE TABLE if not exists  users("
+            + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + "zUser char(31),"
+            + "zFb char(31),"
+            + "birthDate datetime,"
+            + "nGroup INTEGER,"
+            + "bOut INTEGER,"
+            + "zZalo char(31),"
+            + "nOrd INTEGER,"
+            + "zPhapDanh char(31),"
+            + "registedDate datetime,"
+            + "inDate datetime,"
+            + "outDate datetime,"
+            + "logID INTEGER"
+            + ")";
+            m_cols = new lColInfo[] {
+                   new lColInfo( "ID","ID", lColInfo.lColType.num),
+                   new lColInfo( "zUser","Họ tên", lColInfo.lColType.text),
+                   new lColInfo( "zFb","Facebook", lColInfo.lColType.text),
+                   new lColInfo( "birthDate","Ngày sinh", lColInfo.lColType.dateTime),
+                   new lColInfo( "nGroup","Nhóm", lColInfo.lColType.num),
+                   new lColInfo( "zZalo","Zalo", lColInfo.lColType.text),
+                   new lColInfo( "zPhapDanh","Pháp danh", lColInfo.lColType.text),
+                };
         }
     }
 

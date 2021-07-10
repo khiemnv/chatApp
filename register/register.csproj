@@ -151,6 +151,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Indexer.cs" />
+    <Compile Include="InputPanel.cs" />
     <Compile Include="inputProg.cs">
       <SubType>Form</SubType>
     </Compile>

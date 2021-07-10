@@ -31,12 +31,12 @@ namespace register
         {
             this.SuspendLayout();
             // 
-            // user
+            // FormUser
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(577, 319);
-            this.Name = "user";
+            this.ClientSize = new System.Drawing.Size(621, 482);
+            this.Name = "FormUser";
             this.Text = "user";
             this.ResumeLayout(false);
 
