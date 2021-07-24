@@ -58,7 +58,7 @@ namespace register
             m_cp.initCnn(m_cnnStr);
 
 
-            userCmb.KeyUp += UserCmb_KeyUp; ;
+            userCmb.KeyUp += UserCmb_KeyUp;
             //textBox1.TextChanged += TextBox1_TextChanged;
             //textBox1.KeyDown += TextBox1_KeyDown;
 
@@ -175,7 +175,7 @@ namespace register
 
         private async void OnCheckIn(object sender, EventArgs e)
         {
-            CheckInAsync();
+            await CheckInAsync();
         }
         private async void OnCheckOut(object sender, EventArgs e)
         {
@@ -618,7 +618,7 @@ namespace register
 #if DEBUG
             m_db = ConfigMng.CfgRead("zDb") as string;
 #else
-            m_db = ConfigMng.findTmpl("PTXX_NB.accdb");
+            m_db = ConfigMng.FindTmpl("PTXX_NB.accdb");
 #endif
             if (m_db != null)
             {
@@ -975,7 +975,7 @@ namespace register
 #if DEBUG
             vbs = @"C:\Users\Onsiter\Google Drive\CBV\DTPTXX\tools\dkthoikhoa.vbs";
 #else
-            vbs = ConfigMng.findTmpl("dkthoikhoa.vbs");
+            vbs = ConfigMng.FindTmpl("dkthoikhoa.vbs");
 #endif
             Process scriptProc = new Process();
             scriptProc.StartInfo.WorkingDirectory = vbs.Substring(0, vbs.LastIndexOf("\\"));

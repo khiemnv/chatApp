@@ -158,6 +158,7 @@
     <Compile Include="inputProg.Designer.cs">
       <DependentUpon>inputProg.cs</DependentUpon>
     </Compile>
+    <Compile Include="MyCmb.cs" />
     <Compile Include="MyRender.cs" />
     <Compile Include="MyTree.cs" />
     <Compile Include="Program.cs" />

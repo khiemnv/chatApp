@@ -26,6 +26,7 @@ namespace register
         TreeView tv;
 
         MyUser m_user;
+        MyCmb m_useCmb;
         InputPanel m_inputPanel;
         public FormUser()
         {
@@ -45,37 +46,6 @@ namespace register
             var iCol = 0;
             var iRow = 0;
             var lbl = new Label();
-            //lbl.Text = "Ho Ten";
-            //zUser = new TextBox();
-            //tlp.Controls.Add(lbl, iCol, iRow);
-            //tlp.Controls.Add(zUser, iCol+1, iRow);
-
-            //lbl = new Label() { Text = "facebook" };
-            //zFb = new TextBox();
-            //tlp.Controls.Add(lbl, iCol, ++iRow);
-            //tlp.Controls.Add(zFb, iCol + 1, iRow);
-
-            //lbl = new Label() { Text = "zalo" };
-            //zZalo = new TextBox();
-            //tlp.Controls.Add(lbl, iCol, ++iRow);
-            //tlp.Controls.Add(zZalo, iCol + 1, iRow);
-
-            //lbl = new Label() { Text = "Ngay Sinh" };
-            //birthDate = new DateTimePicker();
-            //tlp.Controls.Add(lbl, iCol, ++iRow);
-            //tlp.Controls.Add(birthDate, iCol + 1, iRow);
-
-            //lbl = new Label() { Text = "Nhom" };
-            //nGroup = new TextBox();
-            //tlp.Controls.Add(lbl, iCol, ++iRow);
-            //tlp.Controls.Add(nGroup, iCol + 1, iRow);
-
-
-            //lbl = new Label() { Text = "ID" };
-            //id = new TextBox();
-            //id.ReadOnly = true;
-            //tlp.Controls.Add(lbl, iCol, ++iRow);
-            //tlp.Controls.Add(id, iCol + 1, iRow);
 
             m_inputPanel = new UserInputPanel();
             int lastRow = 0;
@@ -101,17 +71,34 @@ namespace register
             sc.Panel2.Controls.Add (tlp);
             this.Controls.Add( sc);
 
+            //left panel
             tv = new TreeView();
-            tv.NodeMouseDoubleClick += ShowSelectedUser;
+            tv.NodeMouseDoubleClick += (s,e)=>{
+                m_user = (MyUser)e.Node.Tag;
+                ShowSelectedUser();
+            };
             tv.Dock = DockStyle.Fill;
             sc.Panel1.Controls.Add(tv);
+
+            m_useCmb = new MyCmb();
+            var cmb = m_useCmb.userCmb;
+            cmb.Dock = DockStyle.Top;
+            sc.Panel1.Controls.Add(cmb);
+
+            m_useCmb.OnSelectUser += (s,e)=>
+            {
+                m_user = m_useCmb.GetUser();
+                ShowSelectedUser();
+            };
         }
+
+
 
         #region edit_user
         TreeNode m_editingNode;
-        private void ShowSelectedUser(object sender, TreeNodeMouseClickEventArgs e)
+        private void ShowSelectedUser()
         {
-            MyUser u = (MyUser)e.Node.Tag;
+            MyUser u = m_user;
             m_inputPanel.SetObject<MyUser>(u);
 
             var tagLst = m_cp.GetUserTags(u);
@@ -126,7 +113,6 @@ namespace register
                     tags.SetItemChecked(i, false);
                 }
             }
-            m_editingNode = e.Node;
         }
 
         private void AddUpdateUser(object sender, EventArgs e)
@@ -146,7 +132,6 @@ namespace register
                 m_cp.UpdateUser(user);
 
                 var n = tv.Nodes.Find(user.ID.ToString(),true);
-                Debug.Assert(n[0] == m_editingNode);
                 n[0].Text = user.zUserFb;
                 n[0].Tag = user;
                 m_user = user;
@@ -158,6 +143,8 @@ namespace register
                 tagLst.Add(i.ToString());
             }
             m_cp.UpdateUserTag(m_user, tagLst);
+
+            m_useCmb.m_users = m_cp.GetAllUsers();
         }
         #endregion
         private void LoadData(object sender, EventArgs e)
@@ -174,6 +161,7 @@ namespace register
                 var n = tv.Nodes.Add(u.ID.ToString(),u.zUserFb);
                 n.Tag = u;
             }
+            m_useCmb.m_users = userLst;
         }
     }
 }
