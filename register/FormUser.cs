@@ -90,9 +90,25 @@ namespace register
                 m_user = m_useCmb.GetUser();
                 ShowSelectedUser();
             };
+            
+            //menu context
+            var mc = new ContextMenuStrip();
+            this.ContextMenuStrip = mc;
+            var newUser = mc.Items.Add("clear");
+            newUser.Click += NewUser_Click;
         }
 
-
+        private void NewUser_Click(object sender, EventArgs e)
+        {
+            foreach (var ctrl in m_inputPanel.m_inputsCtrls)
+            {
+                ctrl.Text = "";
+            }
+            for (int i = 0; i < tags.Items.Count; i++)
+            {
+                tags.SetItemChecked(i, false);
+            }
+        }
 
         #region edit_user
         TreeNode m_editingNode;

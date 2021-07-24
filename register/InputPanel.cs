@@ -59,6 +59,9 @@ namespace register
                 case TableInfo.lColInfo.lColType.map:
                     lInputCtrlEnum enumCtrl = new lInputCtrlEnum(col.m_field, col.m_alias, lSearchCtrl.ctrlType.map, pos, size);
                     return enumCtrl;
+                case TableInfo.lColInfo.lColType.chk:
+                    lInputCtrlChk chkCtrl = new lInputCtrlChk(col.m_field, col.m_alias, lSearchCtrl.ctrlType.chk, pos, size);
+                    return chkCtrl;
             }
             return null;
         }
@@ -115,7 +118,15 @@ namespace register
                     var obj = field.GetValue(item);
                     if (obj != null)
                     {
-                        ctrl.Text = obj.ToString();
+                        if(ctrl.m_type == lSearchCtrl.ctrlType.dateTime)
+                        {
+                            
+                            ctrl.Text = Convert.ToDateTime(obj).ToString(ConfigMng.GetDisplayDateFormat());
+                        }
+                        else
+                        {
+                            ctrl.Text = obj.ToString();
+                        }
                     }
                 }
             }
@@ -143,8 +154,14 @@ namespace register
 
                 return Convert.ChangeType(value, Nullable.GetUnderlyingType(type));
             }
-
-            return Convert.ChangeType(value, type);
+            try
+            {
+                return Convert.ChangeType(value, type);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
     public class lSearchParam
@@ -161,7 +178,8 @@ namespace register
             dateTime,
             num,
             currency,
-            map
+            map,
+            chk
         };
         public TableInfo.lColInfo m_colInfo;
         [DataMember(Name = "field", EmitDefaultValue = false)]
@@ -359,6 +377,24 @@ namespace register
             m_date.Font = ConfigMng.GetFont();
 
             m_panel.Controls.AddRange(new Control[] { m_label, m_date });
+        }
+
+        public override string Text
+        {
+            get => m_date.Text; set
+            {
+                try
+                {
+                    DateTime dt;
+                    ConfigMng.parseDisplayDate(value, out dt);
+                    m_date.Value = dt;
+                }
+                catch(Exception e)
+                {
+                    Debug.WriteLine("[err][inputctrldate]" + e.Message);
+                }
+
+            }
         }
 
         public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
@@ -559,6 +595,7 @@ namespace register
             exprs.Add(m_fieldName);
         }
     }
+
     [DataContract(Name = "InputCtrlEnum")]
     public class lInputCtrlEnum : lInputCtrl
     {
@@ -617,6 +654,49 @@ namespace register
             }
         }
     }
+    [DataContract(Name = "InputCtrlChk")]
+    public class lInputCtrlChk: lInputCtrl
+    {
+        CheckBox m_chkBox;
+        public lInputCtrlChk(string fieldName, string alias, ctrlType type, Point pos, Size size)
+            : base(fieldName, alias, type, pos, size)
+        {
+            m_chkBox = ConfigMng.CrtCheckBox();
+            m_chkBox.Width = 100;
+            m_panel.Controls.AddRange(new Control[] { m_label, m_chkBox });
+        }
+        public override void updateInsertParams(List<string> exprs, List<lSearchParam> srchParams)
+        {
+            string zVal = m_chkBox.Checked.ToString();
+            exprs.Add(m_fieldName);
+            srchParams.Add(
+                new lSearchParam()
+                {
+                    key = string.Format("@{0}", m_fieldName),
+                    val = zVal,
+                    type = DbType.Boolean
+                }
+            );
+        }
+        public override string Text
+        {
+            get
+            {
+                return m_chkBox.Checked.ToString();
+            }
+            set
+            {
+                try
+                {
+                    m_chkBox.Checked = bool.Parse(value);
+                }
+                catch
+                {
+                    m_chkBox.Checked = false;
+                }
+            }
+        }
+    }
     public class UserInputPanel : InputPanel
     {
         public UserInputPanel()
@@ -632,6 +712,7 @@ namespace register
                 crtInputCtrl(m_tblInfo, "birthDate" , new Point(0, 4), new Size(2, 1)),
                 crtInputCtrl(m_tblInfo, "nGroup"    , new Point(0, 5), new Size(2, 1)),
                 crtInputCtrl(m_tblInfo, "zPhapDanh" , new Point(0, 6), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "bOut" , new Point(0, 6), new Size(2, 1)),
             };
             m_inputsCtrls[0].ReadOnly = true;
         }

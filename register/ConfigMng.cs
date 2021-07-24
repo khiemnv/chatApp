@@ -188,10 +188,10 @@ namespace register
             var path = Environment.CurrentDirectory;
             while (path != null)
             {
-                path = Path.GetDirectoryName(path);
                 if (File.Exists(path + "\\" + tmpl)) {
                     return (path + "\\" + tmpl);
                 }
+                path = Path.GetDirectoryName(path);
             }
             return null;
         }

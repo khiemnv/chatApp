@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.OleDb;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,8 +65,10 @@ namespace register
         public string zFb;
         public int nGroup;
         public string zZalo;
+
         public DateTime birthDate;
         public string zPhapDanh;
+        public bool bOut;
 
         public string zUserFb { get { return zUser + " - " + zFb; } }
 
@@ -77,7 +80,10 @@ namespace register
                 zFb = this.zFb,
                 zZalo = this.zZalo,
                 ID = this.ID,
-                nGroup = this.nGroup
+                nGroup = this.nGroup,
+                birthDate = this.birthDate,
+                zPhapDanh = this.zPhapDanh,
+                bOut = this.bOut
             };
         }
     }
@@ -164,12 +170,13 @@ namespace register
 
         public void AddUser(MyUser user)
         {
-            var cmd = new OleDbCommand("INSERT INTO users (zUser, zFb, zZalo, nGroup,registedDate) VALUES (@zUser, @zFb, @zZalo, @nGroup, @registedDate)", m_cnn);
+            var cmd = new OleDbCommand("INSERT INTO users (zUser, zFb, zZalo, nGroup,registedDate,birthDate) VALUES (@zUser, @zFb, @zZalo, @nGroup, @registedDate, @birthDate)", m_cnn);
             cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
             cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
             cmd.Parameters.Add("@zZalo", OleDbType.VarChar).Value = user.zZalo;
             cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
             cmd.Parameters.Add("@registedDate", OleDbType.Date).Value = DateTime.Now;
+            cmd.Parameters.Add("@birthDate", OleDbType.Date).Value = user.birthDate;
             var n = cmd.ExecuteNonQuery();
             if (n == 1)
             {
@@ -178,11 +185,12 @@ namespace register
         }
         public int UpdateUser(MyUser user)
         {
-            var cmd = new OleDbCommand("UPDATE users SET zUser=@zUser, zFb=@zFb, zZalo=@zZalo, nGroup=@nGroup WHERE ID=@ID", m_cnn);
+            var cmd = new OleDbCommand("UPDATE users SET zUser=@zUser, zFb=@zFb, zZalo=@zZalo, nGroup=@nGroup, bOut=@bOut WHERE ID=@ID", m_cnn);
             cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
             cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
             cmd.Parameters.Add("@zZalo", OleDbType.VarChar).Value = user.zZalo;
             cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
+            cmd.Parameters.Add("@bOut", OleDbType.Boolean).Value = user.bOut;
             cmd.Parameters.Add("@ID", OleDbType.Numeric).Value = user.ID;
             var n = cmd.ExecuteNonQuery();
             return n;
@@ -253,18 +261,70 @@ namespace register
             while (reader.Read())
             {
                 UInt64 uID = Convert.ToUInt64(reader["ID"]);
-                userLst.Add(new MyUser()
-                {
-                    ID = uID,
-                    zFb = Convert.ToString(reader["zFb"]),
-                    zUser = Convert.ToString(reader["zUser"]),
-                    nGroup = int.Parse(reader["nGroup"].ToString()),
-                    zZalo = reader["zZalo"].ToString()
-                });
+                MyUser newUser = GetObject<MyUser>(reader);
+                userLst.Add(newUser);
             }
             reader.Close();
             return userLst;
         }
+
+        public T GetObject<T>(OleDbDataReader reader) where T : new()
+        {
+            T item = new T();
+
+            for ( int i = 0; i< reader.FieldCount;i++)
+            {
+                var field = reader.GetName(i);
+                var val = reader.GetValue(i);
+                PropertyInfo property = GetProperty(typeof(T), field);
+
+                if (property != null)
+                {
+                    property.SetValue(item, ChangeType(val, property.PropertyType), null);
+                }
+
+                FieldInfo fieldInfo = typeof(T).GetField(field);
+                if (fieldInfo != null)
+                {
+                    fieldInfo.SetValue(item, ChangeType(val, fieldInfo.FieldType));
+                }
+            }
+
+            return item;
+        }
+        private PropertyInfo GetProperty(Type type, string attributeName)
+        {
+            PropertyInfo property = type.GetProperty(attributeName);
+
+            if (property != null)
+            {
+                return property;
+            }
+
+            var pros = type.GetProperties();
+            return pros.FirstOrDefault(x => attributeName.Equals(x.Name, StringComparison.OrdinalIgnoreCase));
+        }
+        private object ChangeType(object value, Type type)
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+            {
+                if (value == null)
+                {
+                    return null;
+                }
+
+                return Convert.ChangeType(value, Nullable.GetUnderlyingType(type));
+            }
+            try
+            {
+                return Convert.ChangeType(value, type);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public List<MyUser> GetAllUsers(List<string> tags)
         {
             List<MyUser> userLst = new List<MyUser>();
@@ -765,6 +825,8 @@ namespace register
                 uniqueText,
                 [EnumMember]
                 map,
+                [EnumMember]
+                chk,
             };
             [DataMember(Name = "field", EmitDefaultValue = false)]
             public string m_field;
@@ -856,6 +918,7 @@ namespace register
                    new lColInfo( "nGroup","Nhóm", lColInfo.lColType.num),
                    new lColInfo( "zZalo","Zalo", lColInfo.lColType.text),
                    new lColInfo( "zPhapDanh","Pháp danh", lColInfo.lColType.text),
+                   new lColInfo( "bOut","Xin ra", lColInfo.lColType.chk),
                 };
         }
     }
