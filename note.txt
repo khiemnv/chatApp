@@ -1,0 +1,96 @@
+fix crt path
+render group    line 735 onSpanClick
+render msg      canvas, multiline text?
+
+javascript
+
+addLectItem() line 392
+
+tree node
+    .lect
+    .visible
+    .sts
+    .id
+    .name
+    .childs
+    
+    
+child.childs = null;        //Node: child
+    child.lect = lectItem;
+    g_titlesDict[lectItem.ID] = child;  //for restore sts
+            
+lect
+    .ID
+    .path
+    .content
+    .title
+
+
+paragraphs
+    alignment
+    fontBold
+    fontItalic
+    leftIndent
+    content
+    msgID       (=node.lect.id)
+    parent
+    
+//str.split(/\s+/);
+ctx.measureText(sub);
+for (var i in arr)
+
+lect.ID - nodeID
+
+#12/13
+    render msg: <p> canvas <p> ->require re-render msg
+    render msg: <p> margin, padding
+    sent msg
+    update msg
+#12/14
+    sent msg - udpate sent status
+        addLectItem(root,lectItem)
+        addLectItem(g_rootNode, lectLst[i]);
+        
+        lectItem
+            groupId
+            relativePath
+            content
+            title
+            
+        path style: idi\id\id ->object title can be changed
+        db: path : parent path
+#12/14
+    path
+#12/19
+    send & display msg
+    like button
+        &#9744;&#65039;
+#12/21
+    like user
+    user login/account
+#12/24
+    update like, render like.
+    unlike: ☑ remove node, update title.likes
+#12/25
+    object zid
+#12/26
+    x object zid - continue
+    x like/unlike: update tree
+#1/1 program
+#1/2 display program, register
+#1/4 register, unregister
+#1/7 register, unregister: update db, change option: not implement
+#1/8 update option, toggle option
+#1/22 summary
+    register member
+#1/26: color & use canvas
+    report
+#1/30 report
+#2/3 report: not show like?
+    chat: make title
+    user: login/logout
+#2/8 vps
+    firebase Get started with Firebase Security Rules
+    Control Access with Custom Claims and Security Rules
+#2/9 firebase
+    

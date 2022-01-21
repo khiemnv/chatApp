@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <style type="text/css">
+        button:focus {
+            outline:none;
+        }
+
+        button.miStsBtn {
+            display: table-cell;
+            padding: 0;
+            margin: 0;
+            margin-top: 2px;
+            margin-left: 2px;
+            margin-right: 2px;
+            background-color: transparent;
+            border: none;
+            font-family: 'Arial Unicode MS';
+            transform: scale(1.5,1.5);
+        }
+
+        button.miImgBtn {
+            display: table-cell;
+            padding: 0;
+            margin: 0;
+            margin-top: 0px;
+            margin-left: 2px;
+            margin-right: 2px;
+            background-color: transparent;
+            border: none;
+            font-family: 'Arial Unicode MS';
+            transform: scale(1.5,1.5);
+        }
+
+        button.miChkBtn {
+            display: table-cell;
+            padding: 0;
+            margin: 0;
+            margin-top: 2px;
+            margin-left: 2px;
+            margin-right: 2px;
+            background-color: transparent;
+            border: 1px;
+            font-family: 'Arial Unicode MS';
+            transform: scale(1.5,1.5);
+        }
+
+        span.miLabel:hover {
+            color: blue;
+            text-decoration: underline;
+        }
+
+        span.miLabel {
+            padding: 0;
+            padding-left: 2px;
+            padding-right: 2px;
+            margin: 0;
+            display: table-cell;
+        }
+
+        div.menuItem {
+            width: auto;
+            display: table;
+        }
+
+        div.miChilds {
+            margin-left: 10px;
+        }
+    </style>
+    <style>
+        div.topCtrls {
+            position: fixed;
+            top: 5px;
+            padding: 5px;
+            background-color: #808080;
+            width: 100%;
+        }
+
+        div.botCtrls {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+        }
+
+        div.chatCtrls {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+        }
+
+        div.menu {
+            position: fixed;
+            top: 50px;
+            width: 400px;
+            height: 100%;
+            overflow: scroll;
+            background-color: rgb(209, 209, 209);
+            display: table-cell;
+        }
+
+        div.content {
+            position: fixed;
+            top: 50px;
+            width: 100%;
+            height: 100%;
+            overflow: scroll;
+            display: table-cell;
+        }
+
+        table, td {
+            vertical-align: central;
+            border-width: 0px;
+            border-collapse: collapse;
+        }
+
+        button.fontBtn {
+            font-family: 'MS Gothic';
+        }
+
+        button.playBtn {
+            font-family: 'MS Gothic';
+        }
+
+        button.gotoTopBtn {
+            font-family: 'MS Gothic';
+            position: fixed;
+            right: 5px;
+            bottom: 10px;
+        }
+    </style>
+</head>
+<body id="body" style="font-family: 'Times New Roman'; margin: 5px;">
+    <div id="id_content" class="content">
+        <p style="text-align: center">sentence</p>
+        <p>sentence</p>
+        <p>sentence</p>
+        <p>sentence</p>
+        <p>sentence</p>
+        <p>sentence</p>
+    </div>
+    <button id="id_gotoTopBtn" onclick="gotoTop()" class="gotoTopBtn">△</button>
+    <div id="id_topCtrls" class="topCtrls">
+        <table style="width: 100%; border-width: 0px; border-collapse: collapse">
+            <tr>
+                <td style="width: auto">
+                    <button id="id_toggleMenuBtn" class="fontBtn" style="width: auto" onclick="menuShowHide()">目</button>
+                </td>
+                <td>
+                    <span id="id_sutraTitle" style="white-space: nowrap; font-weight: bold">ChatApp</span>
+                </td>
+                <td style="width: 100%"></td>
+                <td>
+                    <button id="fontInc" class="fontBtn" onclick="incFont()">＋</button>
+                </td>
+                <td>
+                    <button id="fontDec" class="fontBtn" onclick="decFont()">―</button>
+                </td>
+                <td>
+                    <button id="fontAdjBtn" class="fontBtn" onclick="onAdjFont()">〇</button>
+                </td>
+                <td>
+                    <button id="printAll" class="fontBtn" onclick="printAll()">&#9113;</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="id_botCtrls" class="botCtrls" hidden="hidden">
+        <span style="white-space: nowrap">
+            <button class="playBtn" id="id_playContent" onclick="onPlayContent()">⏯️</button>
+            <button class="playBtn" id="id_stopSpeek" onclick="onStopSpeek()">⏹️</button>
+            <button class="playBtn" id="id_prevTitle" onclick="onPrevTitle()">⏮</button>
+            <button class="playBtn" id="id_backward" onclick="onBackward()">⏪</button>
+            <button class="playBtn" id="id_fastForward" onclick="onFastForward()">⏩</button>
+            <button class="playBtn" id="id_nextTitle" onclick="onNextTitle()">⏭</button>
+            <span id="id_playContentSts" style="font-family: 'MS Gothic'">stoped&nbsp;</span>
+        </span>
+    </div>
+    <div id="id_chatCtrls" class="chatCtrls">
+        <table>
+            <tr>
+                <td><label id="id_chatTo">To: </label></td>
+            </tr>
+            <tr>
+                <td><textarea id="id_chatEdt" rows="3" cols="50">chat msg</textarea></td>
+                <td><button id="id_chatSendBtn" onclick="onSendChat()">Send</button></td>
+            </tr>
+        </table>
+    </div>
+    <div id="id_menu" class="menu">
+        <div id="root_childs" class="miChilds">
+            <div class="menuItem">
+                <button id="node1_img" class="miImgBtn" onclick="onImgClick('node1')">+</button>
+                <button id="node1_sts" class="miStsBtn" onclick="onStsClick('node1')">□</button>
+                <span id="node1_span" class="miLabel" onclick="onSpanClick('node1')">node1</span>
+            </div>
+            <div id="node1_childs" class="miChilds">
+                <div class="menuItem">
+                    <button id="node1_1_img" class="miImgBtn" onclick="onImgClick('node1')">+</button>
+                    <button id="node1_1_sts" class="miStsBtn" onclick="onStsClick('node1')">□</button>
+                    <span id="node1_1_span" class="miLabel" onclick="onSpanClick('node1')">node1.1</span>
+                </div>
+                <div id="node1_1_childs" class="miChilds">
+                </div>
+            </div>
+            <div class="menuItem">
+                <button id="node2_img" class="miImgBtn" onclick="onImgClick('node1')">+</button>
+                <button id="node2_sts" class="miStsBtn" onclick="onStsClick('node1')">□</button>
+                <span id="node2_span" class="miLabel" onclick="onSpanClick('node1')">node2</span>
+            </div>
+            <div id="node2_childs" class="miChilds">
+            </div>
+        </div>
+    </div>
+    <span id="log" style="color: gray" hidden="hidden">playing:</span>
+    <script>
+        //chk lnk is mp3, mp4 or youtube
+        function getLnkObj(lnk) {
+            var lnkType;
+            if (lnk.search(/\.mp4$/i) != -1) {
+                lnkType = "mp4";
+            }
+            else if (lnk.search(/\.mp3$/i) != -1) {
+                lnkType = "mp3";
+            }
+            else {
+                lnkType = "youtube";
+                ytlnk = crtYTEmbed(lnk);
+                if (ytlnk != '') {
+                    lnk = ytlnk;
+                }
+            }
+            return { "lnk": lnk, "lnkType": lnkType };
+        }
+
+        //get browser info
+        function who() {
+            var ua = navigator.userAgent, tem,
+                M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if (/trident/i.test(M[1])) {
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return 'IE ' + (tem[1] || '');
+            }
+            if (M[1] === 'Chrome') {
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+            }
+            M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+            if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+            //return M.join(' ');
+            return ua;
+        }
+
+        function crtYTEmbed(url) {
+            var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            var match = url.match(regExp);
+
+            if (match && match[2].length == 11) {
+                return 'https://www.youtube.com/embed/' + match[2];
+            } else {
+                return '';
+            }
+        }
+        function toggle(id) {
+            var x = document.getElementById(id);
+            if (x.style.display == "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+
+        //__in showhide: true-> show
+        function show(id, showhide) {
+            var x = document.getElementById(id);
+            if (showhide) {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+        }
+
+        //video1 controls
+        function playPause(id) {
+            ctrl = document.getElementById(id);
+            if (ctrl.paused)
+                ctrl.play();
+            else
+                ctrl.pause();
+        }
+
+        function makeBig(id) {
+            ctrl = document.getElementById(id);
+            w = Math.min(ctrl.width * 1.1, 1080);
+            resize(id, w);
+        }
+
+        function makeSmall(id) {
+            ctrl = document.getElementById(id);
+            w = Math.max(ctrl.width * 0.9, 360);
+            resize(id, w);
+        }
+
+        function makeNormal(id) {
+            resize(id, 480);
+        }
+        function resize(id, w) {
+            ctrl = document.getElementById(id);
+            ctrl.width = w;
+            if (id == "frame1") {
+                ctrl.height = w * m_scale;
+            }
+        }
+    </script>
+    <script>
+        //init var part2///////
+        //tree
+        var g_nodesDict = {};
+        var g_titlesDict = {};
+        var baseUrl = window.location.href.replace(/\/[^/]*\.html/, "");
+        var g_impSrc = {
+            "expand": "＋", //"▷＋",
+            "colapse": "－", //"▽－",
+            "noop": "　",
+            "checked": "■",
+            "uncheck": "□",
+            "gray": "▣",
+            "like": "👍",
+            "unlike": "☐",
+        };
+    </script>
+    <script>
+        //tree
+        // render item by item
+        function render1(lectLst) {
+            document.getElementById(g_rootNode.id + "_childs").innerHTML = "";
+            g_rootNode.visible = true;
+
+            for (var i in lectLst) {
+                addLectItem(g_rootNode, lectLst[i]);
+            }
+        }
+
+        // render hold tree
+        function render2(lectLst) {
+            for (var i in lectLst) {
+                addNode(g_rootNode, lectLst[i]);
+            }
+            treeRender(g_rootNode);
+        }
+
+        // get data from web and render async
+        function render3(url) {
+            document.getElementById(g_rootNode.id + "_childs").innerHTML = "";
+            g_rootNode.visible = true;
+
+            //getItems();
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var jsTxt = xhttp.responseText;
+                    var items = eval("(" + jsTxt + ")");
+                    for (var i in items) {
+                        var lectItem = items[i];
+                        addLectItem(g_rootNode, lectItem);
+                    }
+                }
+            };
+            xhttp.open('GET', url, true);
+            xhttp.send();
+        }
+
+
+        function getLecturesSync(url) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.open('GET', url, false);
+            xhttp.send();
+            if (xhttp.status == 200) {
+                return eval("(" + xhttp.responseText + ")");
+            } else {
+                return [];
+            }
+        }
+
+        ////////////////////////////////////////////
+        //function getItems() {
+        //  var uri = "https://localhost:44336/api/Lectures";
+        //  fetch(uri)
+        //    .then(response => response.json())
+        //    .then(data => _displayItems(data))
+        //    .catch(error => console.error('Unable to get items.', error));
+        //}
+        //function _displayItems(data) {
+        //  data.forEach(item => {
+        //    addLectItem(rootNode,item);
+        //  });
+        //}
+        ////////////////////////////////////////////
+        //add lecture item to root node
+        function addNode(root, lectItem) {
+            var path = [lectItem.author, lectItem.target, lectItem.topic];
+            var parent = root;
+            var child;
+            for (var i in path) {
+                var name = path[i];
+                if (parent.childs[name] != null) {
+                    child = parent.childs[name];
+                } else {
+                    var id = parent.id + '_' + Object.keys(parent.childs).length;
+                    child = {
+                        "id": id,
+                        "name": name,
+                        "childs": [],
+                    };
+                    parent.childs[name] = child;
+                }
+                parent = child;
+            }
+            parent.childs[lectItem.title] = {
+                "id": parent.id + '_' + lectItem.title,
+                "name": lectItem.title,
+                "lect": lectItem,
+            };
+        }
+
+        //add and render lecture item
+        function addLectItem(root, lectItem) {
+            var path = lectItem.path.split('/');
+            var parent = root;
+            var child;
+            var renderLst = [];
+            for (var i in path) {
+                var name = path[i];
+                if (parent.childs == null) {
+                    parent.childs = {};
+                }
+                if (parent.childs[name] != null) {
+                    child = parent.childs[name];
+                } else {
+                    var id = parent.id + '_' + Object.keys(parent.childs).length;
+                    child = {
+                        "id": id,
+                        "name": name,
+                        "childs": [],
+                    };
+                    parent.childs[name] = child;
+
+                    //add to render lst
+                    renderLst.push([parent, child]);
+                }
+                parent = child;
+            }
+
+            child.childs = null;
+            child.lect = lectItem;
+            g_titlesDict[lectItem.zID] = child;  //for restore sts
+
+            //render nodes
+            for (var i in renderLst) {
+                parent = renderLst[i][0];
+                child = renderLst[i][1];
+                treeAdd(parent, child);
+                g_nodesDict[child.id] = child;
+            }
+        }
+
+        function rmLectItem(root, lectItem) {
+            var path = lectItem.path.split('/');
+            var parent;
+            var child = root;
+            for (var i in path) {
+                parent = child;
+                var name = path[i];
+                child = parent.childs[name];
+            }
+            var e = document.getElementById(parent.id + "_childs");
+            e.removeChild(document.getElementById(child.id + "_label"));
+            e.removeChild(document.getElementById(child.id + "_childs"));
+            delete parent.childs[name];
+        }
+
+        function treeRender(rootNode) {
+            document.getElementById(rootNode.id + "_childs").innerHTML = "";
+            rootNode.visible = true;
+            treeAddR(rootNode);
+        }
+        function treeAddR(parentNode) {
+            var i;
+            for (i in parentNode.childs) {
+                var childNode = parentNode.childs[i];
+                treeAdd(parentNode, childNode);
+                g_nodesDict[childNode.id] = childNode;
+                treeAddR(childNode);
+            }
+        }
+        function treeAdd(parentNode, childNode) {
+            //init node
+            childNode.parent = parentNode;
+            childNode.sts = 0;  //uncheck
+            childNode.visible = true;
+
+            //var imgTxt = '<img id="[nodeId]_img" class="toggleImg" src="[imgSrc]" onclick="onImgClick(' + "'[nodeId]'" + ')"></img>';
+            //imgTxt = imgTxt.replace(/\[nodeId\]/g, childNode.id);
+            //imgTxt = imgTxt.replace(/\[imgSrc\]/g, imgSrc.colapse);
+            //if (childNode.childs == null) {
+            //    imgTxt = '<img src="' + imgSrc.noop + '" ></img>'
+            //}
+            var img1 = document.createElement("button");
+            img1.id = childNode.id + "_img";
+            img1.className = "miImgBtn";
+            img1.textContent = g_impSrc.colapse;
+            //if (childNode.childs == null) { img1.textContent = g_impSrc.noop };
+            img1.onclick = function () { onImgClick(childNode.id) };
+
+            //var stsTxt = '<img id="[nodeId]_sts" class="stsImg" src="[stsSrc]" onclick="onStsClick(' + "'[nodeId]'" + ')"></img>';
+            //stsTxt = stsTxt.replace(/\[nodeId\]/g, childNode.id);
+            //stsTxt = stsTxt.replace(/\[stsSrc\]/g, g_impSrc.uncheck);
+            var sts1 = document.createElement("button");
+            sts1.id = childNode.id + "_sts";
+            sts1.className = "miStsBtn";
+            sts1.textContent = g_impSrc.uncheck;
+            sts1.onclick = function () { onStsClick(childNode.id) };
+
+            //var spanTxt = '<span id="[nodeId]_span" class="txtbtn" onclick="onSpanClick(' + "'[nodeId]'" + ')">[nodeName]</span><br>';
+            //spanTxt = spanTxt.replace(/\[nodeId\]/g, childNode.id);
+            //spanTxt = spanTxt.replace(/\[nodeName\]/g, childNode.name);
+            var span1 = document.createElement("span");
+            span1.id = childNode.id + "_span";
+            span1.className = "miLabel";
+            span1.textContent = childNode.name;
+            span1.onclick = function () { onSpanClick(childNode.id) };
+
+            var div1 = document.createElement("div");
+            div1.id = childNode.id + "_label";
+            div1.className = "menuItem";
+            //var span11 = document.createElement("span");
+            //span11.appendChild(img1);
+            //span11.appendChild(sts1);
+            //div1.appendChild(span11);
+            //div1.appendChild(img1);
+            //div1.appendChild(sts1);
+            //div1.appendChild(span1);
+
+            var tbl = document.createElement("table");
+            var tr = tbl.insertRow();
+            var td = tr.insertCell();
+            td.appendChild(img1);
+            var td = tr.insertCell();
+            td.appendChild(sts1);
+            var td = tr.insertCell();
+            td.appendChild(span1);
+            div1.appendChild(tbl);
+
+            //var divTxt = '<div id="[nodeId]_childs" class="childsDiv">';
+            //divTxt = divTxt.replace(/\[nodeId\]/g, childNode.id);
+            var div2 = document.createElement("div");
+            div2.className = "miChilds";
+            div2.id = childNode.id + "_childs";
+
+            var tDiv = document.getElementById(parentNode.id + "_childs");
+            //tDiv.innerHTML += imgTxt + stsTxt + spanTxt + divTxt;
+            tDiv.appendChild(div1);
+            tDiv.appendChild(div2);
+        }
+
+        //NOTE: g_rootNode ignore
+        function showHideCollapsed(tNode) {
+            var img1 = document.getElementById(tNode.id + "_img");
+            if ((tNode.childs == null) || (Object.keys(tNode.childs).length == 0)) {
+                img1.textContent = g_impSrc.noop;
+            } else {
+                if (img1 == null) {
+                    //root node
+                }
+                else {
+                    if (tNode.visible) {
+                        img1.textContent = g_impSrc.colapse;
+                    } else {
+                        img1.textContent = g_impSrc.expand;
+                    }
+
+                }
+                for (var i in tNode.childs) {
+                    var childNode = tNode.childs[i];
+                    showHideCollapsed(childNode);
+                }
+            }
+        }
+        function updateChildSts(tNode) {
+            var childs = tNode.childs;
+            var sts = tNode.sts;
+            var i;
+            for (i in childs) {
+                var childNode = childs[i];
+                childNode.sts = sts;
+                updateStsImg(childNode);
+
+                updateChildSts(childNode);
+            }
+        }
+        function updateParentSts(tNode, sts) {
+            if (tNode.id == "root") return;
+            var childs = tNode.childs;
+            if (sts != 2) {
+                for (var i in childs) {
+                    var childNode = childs[i];
+                    if (childNode.sts != sts) {
+                        sts = 2;
+                        break;
+                    }
+                }
+            }
+            tNode.sts = sts;
+            updateStsImg(tNode);
+
+            //recursive
+            updateParentSts(tNode.parent, sts);
+        }
+
+        function updateStsImg(tNode) {
+            var src;
+            switch (tNode.sts) {
+                case 0:
+                    src = g_impSrc.uncheck;
+                    //if (tNode.lect != null) {
+                    //    alert("ucheck:" + tNode.lect.ID)
+                    //}
+                    break;
+                case 1:
+                    src = g_impSrc.checked;
+                    //if (tNode.lect != null) {
+                    //    alert("check:" + tNode.lect.ID)
+                    //}
+                    break;
+                default:
+                    src = g_impSrc.gray;
+            }
+            var tImg = document.getElementById(tNode.id + "_sts");
+            //tImg.src = src;
+            tImg.textContent = src;
+        }
+
+        //"2018-04-10T04:00:00.000Z"
+        function getDate(zTxt) {
+            return zTxt.match(/.*(?=T)/);
+        }
+    </script>
+    <script>
+        //var init///////////////////////
+        var nodeLst = {
+            "id": "root",
+            "name": "root node",
+            "childs": [
+                {
+                    "id": "id_1",
+                    "name": "name 1",
+                    "childs": [
+                        {
+                            "id": "id_1_1",
+                            "name": "name 1.1",
+                        },
+                        {
+                            "id": "id_1_2",
+                            "name": "name 1.2",
+                        },
+                    ]
+                },
+                {
+                    "id": "id_2",
+                    "name": "name 2",
+                }
+            ]
+        };
+        var g_lectLst;
+        g_lectLst = [{
+            "path": "p1/p2long txt long txt long txtlong long txt long txt long txtlong txtlong txtlong txtlong txt/p3/t1 long txt long txt long txtlong txtlong txtlong txtlong txt",
+            "ID": "2",
+            "created": "01/01/2019",
+            "title": "bai giang 1",
+            "topic": "chu de 2",
+            "target": "doi tuong 1",
+            "author": "su ong",
+            "content": "noi dung",
+            "link": "file:///C:/Users/Khiem/Downloads/movie/Harry.Potter.and.the.Deathly.Hallows.Part.1.2010.mp4"
+        },
+        {
+            "path": "p1/p2long txt long txt long txtlong long txt long txt long txtlong txtlong txtlong txtlong txt/p3/t2",
+            "ID": "3",
+            "created": "02/01/2019",
+            "title": "bai giang 2",
+            "topic": "chu de 2",
+            "target": "doi tuong 2",
+            "author": "su phu",
+            "content": "noi dung",
+            "link": "https://www.youtube.com/watch?v=HQ1lFe9I0lo"
+        },
+        {
+
+            "path": "p1/p2/p3/t3",
+            "ID": "4",
+            "created": "03/01/2019",
+            "title": "bai giang 3",
+            "topic": "chu de 3",
+            "target": "doi tuong 3",
+            "author": "su phu",
+            "content": "noi dung",
+            "link": "file:///D:/music/nhac%20niem%20phat/Nammobotatquantheam.mp3"
+        }
+        ];
+        //var g_nodesDict={};
+        //var baseUrl = window.location.href.replace(/\/[^/]*\.html/,"");
+        //var g_impSrc = {
+        //  "expand":baseUrl+"/expand_button.png",
+        //  "colapse":baseUrl+"/collapse_button.png",
+        //  "noop":baseUrl+"/noop_button.png",
+        //  "checked":baseUrl+"/sts_checked.png",
+        //  "uncheck":baseUrl+"/sts_uncheck.png",
+        //  "gray":baseUrl+"/sts_gray.png",  
+        //};
+
+        var g_rootNode = {
+            "id": "root",
+            "name": "root",
+            "childs": [],
+        };
+
+        var lectItem = {
+            "author": "author 2",
+            "target": "target 1",
+            "topic": "topic 2",
+            "title": "title 2.1.1.6",
+        };
+
+        //main//////////////////////////////////////
+        //render tree
+        var jsTxt = [{"content":"học pháp thường kỳ 2020\/11\/30　kinh Mi Tien","path":"học pháp\/tháng 11\/cuối tháng 30","title":"cuối tháng 30","type":"program","zID":"p1"},{"content":"1. nghe trực tiếp 1\/47","path":"học pháp\/tháng 11\/cuối tháng 30\/1. nghe trực tiếp","title":"1. nghe trực tiếp","type":"prog_opt","zID":"p1_opt1"},{"content":"p1 u2 1","path":"học pháp\/tháng 11\/cuối tháng 30\/1. nghe trực tiếp\/user2","title":"user2","type":"register","zID":"r2"},{"content":" 2. nghe vào ngày khác 1\/47","path":"học pháp\/tháng 11\/cuối tháng 30\/ 2. nghe vào ngày khác","title":" 2. nghe vào ngày khác","type":"prog_opt","zID":"p1_opt2"},{"content":"p1 u1 2 12-12-2021","path":"học pháp\/tháng 11\/cuối tháng 30\/ 2. nghe vào ngày khác\/user1 12-12-2021","title":"user1 12-12-2021","type":"register","zID":"r9"},{"content":"not register 45\/47,user3,user4,Vũ Thị Duyên,Phùng Thế Sơn,Nguyễn Thị Nhàn,Thân Thái Dương,Hoàng Thị Huyền,Lương Thị Kim Cúc,Nguyễn Thị Thịnh,Nguyễn Văn Khiêm,Nguyễn Đăng Thắng,Nguyễn Tú Uyên,Lê Thị Phương Thảo,Nguyễn Thị Hải,Nguyễn Mạnh Cường,Lê Ngọc Quỳnh,Dương Thị Hoài Thu,Đỗ Thị Hà,Nguyễn Thị Tuyết Nhung,Đào Thị Hà,Đinh Ngọc Anh,Trần Văn Khánh,Lê Thị Điệp,Nguyễn Thị Thơm,Bùi Văn Minh,Đinh Thị Thanh Thảo,Nguyễn Quỳnh Anh,Hoàng Thị Thiên,Nguyễn Thị Nga,Cao Thị Linh,Nguyễn Văn Hoàng,Đỗ Thị Yến,Nguyễn Thị Thu,Nguyễn Minh Hiếu,Nguyễn Văn Khang,Trần Thị Đăng Quế,Nguyễn Ngần,Nguyễn Thị Hồng,Nguyễn Trung Đức,Vũ Thị Hiền,Phạm Thị Bích,Nguyễn Anh Tú,Nguyễn Văn Xã,Nguyễn Thị Hồng,Lê Thị Thu Hà","path":"học pháp\/tháng 11\/cuối tháng 30\/not register","title":"not register","type":"prog_opt","zID":"p1_opt3"},{"content":"p1 u3 3","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/user3","title":"user3","type":"register","zID":"r2147483786"},{"content":"p1 u4 4","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/user4","title":"user4","type":"register","zID":"r2147483787"},{"content":"p1 u5 5","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Vũ Thị Duyên","title":"Vũ Thị Duyên","type":"register","zID":"r2147483788"},{"content":"p1 u6 6","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Phùng Thế Sơn","title":"Phùng Thế Sơn","type":"register","zID":"r2147483789"},{"content":"p1 u7 7","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Nhàn","title":"Nguyễn Thị Nhàn","type":"register","zID":"r2147483790"},{"content":"p1 u8 8","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Thân Thái Dương","title":"Thân Thái Dương","type":"register","zID":"r2147483791"},{"content":"p1 u9 9","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Hoàng Thị Huyền","title":"Hoàng Thị Huyền","type":"register","zID":"r2147483792"},{"content":"p1 u10 10","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Lương Thị Kim Cúc","title":"Lương Thị Kim Cúc","type":"register","zID":"r2147483793"},{"content":"p1 u11 11","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Thịnh","title":"Nguyễn Thị Thịnh","type":"register","zID":"r2147483794"},{"content":"p1 u12 12","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Văn Khiêm","title":"Nguyễn Văn Khiêm","type":"register","zID":"r2147483795"},{"content":"p1 u13 13","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Đăng Thắng","title":"Nguyễn Đăng Thắng","type":"register","zID":"r2147483796"},{"content":"p1 u14 14","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Tú Uyên","title":"Nguyễn Tú Uyên","type":"register","zID":"r2147483797"},{"content":"p1 u15 15","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Lê Thị Phương Thảo","title":"Lê Thị Phương Thảo","type":"register","zID":"r2147483798"},{"content":"p1 u16 16","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Hải","title":"Nguyễn Thị Hải","type":"register","zID":"r2147483799"},{"content":"p1 u17 17","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Mạnh Cường","title":"Nguyễn Mạnh Cường","type":"register","zID":"r2147483800"},{"content":"p1 u18 18","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Lê Ngọc Quỳnh","title":"Lê Ngọc Quỳnh","type":"register","zID":"r2147483801"},{"content":"p1 u19 19","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Dương Thị Hoài Thu","title":"Dương Thị Hoài Thu","type":"register","zID":"r2147483802"},{"content":"p1 u20 20","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Đỗ Thị Hà","title":"Đỗ Thị Hà","type":"register","zID":"r2147483803"},{"content":"p1 u21 21","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Tuyết Nhung","title":"Nguyễn Thị Tuyết Nhung","type":"register","zID":"r2147483804"},{"content":"p1 u22 22","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Đào Thị Hà","title":"Đào Thị Hà","type":"register","zID":"r2147483805"},{"content":"p1 u23 23","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Đinh Ngọc Anh","title":"Đinh Ngọc Anh","type":"register","zID":"r2147483806"},{"content":"p1 u24 24","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Trần Văn Khánh","title":"Trần Văn Khánh","type":"register","zID":"r2147483807"},{"content":"p1 u25 25","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Lê Thị Điệp","title":"Lê Thị Điệp","type":"register","zID":"r2147483808"},{"content":"p1 u26 26","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Thơm","title":"Nguyễn Thị Thơm","type":"register","zID":"r2147483809"},{"content":"p1 u27 27","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Bùi Văn Minh","title":"Bùi Văn Minh","type":"register","zID":"r2147483810"},{"content":"p1 u28 28","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Đinh Thị Thanh Thảo","title":"Đinh Thị Thanh Thảo","type":"register","zID":"r2147483811"},{"content":"p1 u29 29","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Quỳnh Anh","title":"Nguyễn Quỳnh Anh","type":"register","zID":"r2147483812"},{"content":"p1 u30 30","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Hoàng Thị Thiên","title":"Hoàng Thị Thiên","type":"register","zID":"r2147483813"},{"content":"p1 u31 31","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Nga","title":"Nguyễn Thị Nga","type":"register","zID":"r2147483814"},{"content":"p1 u32 32","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Cao Thị Linh","title":"Cao Thị Linh","type":"register","zID":"r2147483815"},{"content":"p1 u33 33","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Văn Hoàng","title":"Nguyễn Văn Hoàng","type":"register","zID":"r2147483816"},{"content":"p1 u34 34","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Đỗ Thị Yến","title":"Đỗ Thị Yến","type":"register","zID":"r2147483817"},{"content":"p1 u35 35","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Thu","title":"Nguyễn Thị Thu","type":"register","zID":"r2147483818"},{"content":"p1 u36 36","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Minh Hiếu","title":"Nguyễn Minh Hiếu","type":"register","zID":"r2147483819"},{"content":"p1 u37 37","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Văn Khang","title":"Nguyễn Văn Khang","type":"register","zID":"r2147483820"},{"content":"p1 u38 38","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Trần Thị Đăng Quế","title":"Trần Thị Đăng Quế","type":"register","zID":"r2147483821"},{"content":"p1 u39 39","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Ngần","title":"Nguyễn Ngần","type":"register","zID":"r2147483822"},{"content":"p1 u46 46","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Thị Hồng","title":"Nguyễn Thị Hồng","type":"register","zID":"r2147483829"},{"content":"p1 u41 41","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Trung Đức","title":"Nguyễn Trung Đức","type":"register","zID":"r2147483824"},{"content":"p1 u42 42","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Vũ Thị Hiền","title":"Vũ Thị Hiền","type":"register","zID":"r2147483825"},{"content":"p1 u43 43","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Phạm Thị Bích","title":"Phạm Thị Bích","type":"register","zID":"r2147483826"},{"content":"p1 u44 44","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Anh Tú","title":"Nguyễn Anh Tú","type":"register","zID":"r2147483827"},{"content":"p1 u45 45","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Nguyễn Văn Xã","title":"Nguyễn Văn Xã","type":"register","zID":"r2147483828"},{"content":"p1 u47 47","path":"học pháp\/tháng 11\/cuối tháng 30\/not register\/Lê Thị Thu Hà","title":"Lê Thị Thu Hà","type":"register","zID":"r2147483830"},{"content":"học pháp thường kỳ 2020\/12\/08　kinh pháp cú","path":"học pháp\/tháng 12\/mồng 8","title":"mồng 8","type":"program","zID":"p2"},{"content":"1. nghe trực tiếp 0\/47","path":"học pháp\/tháng 12\/mồng 8\/1. nghe trực tiếp","title":"1. nghe trực tiếp","type":"prog_opt","zID":"p2_opt1"},{"content":" 2. nghe vào ngày khác 1\/47","path":"học pháp\/tháng 12\/mồng 8\/ 2. nghe vào ngày khác","title":" 2. nghe vào ngày khác","type":"prog_opt","zID":"p2_opt2"},{"content":"p2 u1 2","path":"học pháp\/tháng 12\/mồng 8\/ 2. nghe vào ngày khác\/user1","title":"user1","type":"register","zID":"r10"},{"content":"not register 46\/47,user2,user3,user4,Vũ Thị Duyên,Phùng Thế Sơn,Nguyễn Thị Nhàn,Thân Thái Dương,Hoàng Thị Huyền,Lương Thị Kim Cúc,Nguyễn Thị Thịnh,Nguyễn Văn Khiêm,Nguyễn Đăng Thắng,Nguyễn Tú Uyên,Lê Thị Phương Thảo,Nguyễn Thị Hải,Nguyễn Mạnh Cường,Lê Ngọc Quỳnh,Dương Thị Hoài Thu,Đỗ Thị Hà,Nguyễn Thị Tuyết Nhung,Đào Thị Hà,Đinh Ngọc Anh,Trần Văn Khánh,Lê Thị Điệp,Nguyễn Thị Thơm,Bùi Văn Minh,Đinh Thị Thanh Thảo,Nguyễn Quỳnh Anh,Hoàng Thị Thiên,Nguyễn Thị Nga,Cao Thị Linh,Nguyễn Văn Hoàng,Đỗ Thị Yến,Nguyễn Thị Thu,Nguyễn Minh Hiếu,Nguyễn Văn Khang,Trần Thị Đăng Quế,Nguyễn Ngần,Nguyễn Thị Hồng,Nguyễn Trung Đức,Vũ Thị Hiền,Phạm Thị Bích,Nguyễn Anh Tú,Nguyễn Văn Xã,Nguyễn Thị Hồng,Lê Thị Thu Hà","path":"học pháp\/tháng 12\/mồng 8\/not register","title":"not register","type":"prog_opt","zID":"p2_opt3"},{"content":"p2 u2 2","path":"học pháp\/tháng 12\/mồng 8\/not register\/user2","title":"user2","type":"register","zID":"r2147483831"},{"content":"p2 u3 3","path":"học pháp\/tháng 12\/mồng 8\/not register\/user3","title":"user3","type":"register","zID":"r2147483832"},{"content":"p2 u4 4","path":"học pháp\/tháng 12\/mồng 8\/not register\/user4","title":"user4","type":"register","zID":"r2147483833"},{"content":"p2 u5 5","path":"học pháp\/tháng 12\/mồng 8\/not register\/Vũ Thị Duyên","title":"Vũ Thị Duyên","type":"register","zID":"r2147483834"},{"content":"p2 u6 6","path":"học pháp\/tháng 12\/mồng 8\/not register\/Phùng Thế Sơn","title":"Phùng Thế Sơn","type":"register","zID":"r2147483835"},{"content":"p2 u7 7","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Nhàn","title":"Nguyễn Thị Nhàn","type":"register","zID":"r2147483836"},{"content":"p2 u8 8","path":"học pháp\/tháng 12\/mồng 8\/not register\/Thân Thái Dương","title":"Thân Thái Dương","type":"register","zID":"r2147483837"},{"content":"p2 u9 9","path":"học pháp\/tháng 12\/mồng 8\/not register\/Hoàng Thị Huyền","title":"Hoàng Thị Huyền","type":"register","zID":"r2147483838"},{"content":"p2 u10 10","path":"học pháp\/tháng 12\/mồng 8\/not register\/Lương Thị Kim Cúc","title":"Lương Thị Kim Cúc","type":"register","zID":"r2147483839"},{"content":"p2 u11 11","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Thịnh","title":"Nguyễn Thị Thịnh","type":"register","zID":"r2147483840"},{"content":"p2 u12 12","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Văn Khiêm","title":"Nguyễn Văn Khiêm","type":"register","zID":"r2147483841"},{"content":"p2 u13 13","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Đăng Thắng","title":"Nguyễn Đăng Thắng","type":"register","zID":"r2147483842"},{"content":"p2 u14 14","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Tú Uyên","title":"Nguyễn Tú Uyên","type":"register","zID":"r2147483843"},{"content":"p2 u15 15","path":"học pháp\/tháng 12\/mồng 8\/not register\/Lê Thị Phương Thảo","title":"Lê Thị Phương Thảo","type":"register","zID":"r2147483844"},{"content":"p2 u16 16","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Hải","title":"Nguyễn Thị Hải","type":"register","zID":"r2147483845"},{"content":"p2 u17 17","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Mạnh Cường","title":"Nguyễn Mạnh Cường","type":"register","zID":"r2147483846"},{"content":"p2 u18 18","path":"học pháp\/tháng 12\/mồng 8\/not register\/Lê Ngọc Quỳnh","title":"Lê Ngọc Quỳnh","type":"register","zID":"r2147483847"},{"content":"p2 u19 19","path":"học pháp\/tháng 12\/mồng 8\/not register\/Dương Thị Hoài Thu","title":"Dương Thị Hoài Thu","type":"register","zID":"r2147483848"},{"content":"p2 u20 20","path":"học pháp\/tháng 12\/mồng 8\/not register\/Đỗ Thị Hà","title":"Đỗ Thị Hà","type":"register","zID":"r2147483849"},{"content":"p2 u21 21","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Tuyết Nhung","title":"Nguyễn Thị Tuyết Nhung","type":"register","zID":"r2147483850"},{"content":"p2 u22 22","path":"học pháp\/tháng 12\/mồng 8\/not register\/Đào Thị Hà","title":"Đào Thị Hà","type":"register","zID":"r2147483851"},{"content":"p2 u23 23","path":"học pháp\/tháng 12\/mồng 8\/not register\/Đinh Ngọc Anh","title":"Đinh Ngọc Anh","type":"register","zID":"r2147483852"},{"content":"p2 u24 24","path":"học pháp\/tháng 12\/mồng 8\/not register\/Trần Văn Khánh","title":"Trần Văn Khánh","type":"register","zID":"r2147483853"},{"content":"p2 u25 25","path":"học pháp\/tháng 12\/mồng 8\/not register\/Lê Thị Điệp","title":"Lê Thị Điệp","type":"register","zID":"r2147483854"},{"content":"p2 u26 26","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Thơm","title":"Nguyễn Thị Thơm","type":"register","zID":"r2147483855"},{"content":"p2 u27 27","path":"học pháp\/tháng 12\/mồng 8\/not register\/Bùi Văn Minh","title":"Bùi Văn Minh","type":"register","zID":"r2147483856"},{"content":"p2 u28 28","path":"học pháp\/tháng 12\/mồng 8\/not register\/Đinh Thị Thanh Thảo","title":"Đinh Thị Thanh Thảo","type":"register","zID":"r2147483857"},{"content":"p2 u29 29","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Quỳnh Anh","title":"Nguyễn Quỳnh Anh","type":"register","zID":"r2147483858"},{"content":"p2 u30 30","path":"học pháp\/tháng 12\/mồng 8\/not register\/Hoàng Thị Thiên","title":"Hoàng Thị Thiên","type":"register","zID":"r2147483859"},{"content":"p2 u31 31","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Nga","title":"Nguyễn Thị Nga","type":"register","zID":"r2147483860"},{"content":"p2 u32 32","path":"học pháp\/tháng 12\/mồng 8\/not register\/Cao Thị Linh","title":"Cao Thị Linh","type":"register","zID":"r2147483861"},{"content":"p2 u33 33","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Văn Hoàng","title":"Nguyễn Văn Hoàng","type":"register","zID":"r2147483862"},{"content":"p2 u34 34","path":"học pháp\/tháng 12\/mồng 8\/not register\/Đỗ Thị Yến","title":"Đỗ Thị Yến","type":"register","zID":"r2147483863"},{"content":"p2 u35 35","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Thu","title":"Nguyễn Thị Thu","type":"register","zID":"r2147483864"},{"content":"p2 u36 36","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Minh Hiếu","title":"Nguyễn Minh Hiếu","type":"register","zID":"r2147483865"},{"content":"p2 u37 37","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Văn Khang","title":"Nguyễn Văn Khang","type":"register","zID":"r2147483866"},{"content":"p2 u38 38","path":"học pháp\/tháng 12\/mồng 8\/not register\/Trần Thị Đăng Quế","title":"Trần Thị Đăng Quế","type":"register","zID":"r2147483867"},{"content":"p2 u39 39","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Ngần","title":"Nguyễn Ngần","type":"register","zID":"r2147483868"},{"content":"p2 u46 46","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Thị Hồng","title":"Nguyễn Thị Hồng","type":"register","zID":"r2147483875"},{"content":"p2 u41 41","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Trung Đức","title":"Nguyễn Trung Đức","type":"register","zID":"r2147483870"},{"content":"p2 u42 42","path":"học pháp\/tháng 12\/mồng 8\/not register\/Vũ Thị Hiền","title":"Vũ Thị Hiền","type":"register","zID":"r2147483871"},{"content":"p2 u43 43","path":"học pháp\/tháng 12\/mồng 8\/not register\/Phạm Thị Bích","title":"Phạm Thị Bích","type":"register","zID":"r2147483872"},{"content":"p2 u44 44","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Anh Tú","title":"Nguyễn Anh Tú","type":"register","zID":"r2147483873"},{"content":"p2 u45 45","path":"học pháp\/tháng 12\/mồng 8\/not register\/Nguyễn Văn Xã","title":"Nguyễn Văn Xã","type":"register","zID":"r2147483874"},{"content":"p2 u47 47","path":"học pháp\/tháng 12\/mồng 8\/not register\/Lê Thị Thu Hà","title":"Lê Thị Thu Hà","type":"register","zID":"r2147483876"},{"content":"học pháp thường kỳ 2020\/12\/14　kinh Mi Tien","path":"học pháp\/tháng 12\/rằm 14","title":"rằm 14","type":"program","zID":"p3"},{"content":"1. nghe trực tiếp 0\/47","path":"học pháp\/tháng 12\/rằm 14\/1. nghe trực tiếp","title":"1. nghe trực tiếp","type":"prog_opt","zID":"p3_opt1"},{"content":" 2. nghe vào ngày khác 0\/47","path":"học pháp\/tháng 12\/rằm 14\/ 2. nghe vào ngày khác","title":" 2. nghe vào ngày khác","type":"prog_opt","zID":"p3_opt2"},{"content":"not register 47\/47,user1,user2,user3,user4,Vũ Thị Duyên,Phùng Thế Sơn,Nguyễn Thị Nhàn,Thân Thái Dương,Hoàng Thị Huyền,Lương Thị Kim Cúc,Nguyễn Thị Thịnh,Nguyễn Văn Khiêm,Nguyễn Đăng Thắng,Nguyễn Tú Uyên,Lê Thị Phương Thảo,Nguyễn Thị Hải,Nguyễn Mạnh Cường,Lê Ngọc Quỳnh,Dương Thị Hoài Thu,Đỗ Thị Hà,Nguyễn Thị Tuyết Nhung,Đào Thị Hà,Đinh Ngọc Anh,Trần Văn Khánh,Lê Thị Điệp,Nguyễn Thị Thơm,Bùi Văn Minh,Đinh Thị Thanh Thảo,Nguyễn Quỳnh Anh,Hoàng Thị Thiên,Nguyễn Thị Nga,Cao Thị Linh,Nguyễn Văn Hoàng,Đỗ Thị Yến,Nguyễn Thị Thu,Nguyễn Minh Hiếu,Nguyễn Văn Khang,Trần Thị Đăng Quế,Nguyễn Ngần,Nguyễn Thị Hồng,Nguyễn Trung Đức,Vũ Thị Hiền,Phạm Thị Bích,Nguyễn Anh Tú,Nguyễn Văn Xã,Nguyễn Thị Hồng,Lê Thị Thu Hà","path":"học pháp\/tháng 12\/rằm 14\/not register","title":"not register","type":"prog_opt","zID":"p3_opt3"},{"content":"p3 u1 1","path":"học pháp\/tháng 12\/rằm 14\/not register\/user1","title":"user1","type":"register","zID":"r2147483877"},{"content":"p3 u2 2","path":"học pháp\/tháng 12\/rằm 14\/not register\/user2","title":"user2","type":"register","zID":"r2147483878"},{"content":"p3 u3 3","path":"học pháp\/tháng 12\/rằm 14\/not register\/user3","title":"user3","type":"register","zID":"r2147483879"},{"content":"p3 u4 4","path":"học pháp\/tháng 12\/rằm 14\/not register\/user4","title":"user4","type":"register","zID":"r2147483880"},{"content":"p3 u5 5","path":"học pháp\/tháng 12\/rằm 14\/not register\/Vũ Thị Duyên","title":"Vũ Thị Duyên","type":"register","zID":"r2147483881"},{"content":"p3 u6 6","path":"học pháp\/tháng 12\/rằm 14\/not register\/Phùng Thế Sơn","title":"Phùng Thế Sơn","type":"register","zID":"r2147483882"},{"content":"p3 u7 7","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Nhàn","title":"Nguyễn Thị Nhàn","type":"register","zID":"r2147483883"},{"content":"p3 u8 8","path":"học pháp\/tháng 12\/rằm 14\/not register\/Thân Thái Dương","title":"Thân Thái Dương","type":"register","zID":"r2147483884"},{"content":"p3 u9 9","path":"học pháp\/tháng 12\/rằm 14\/not register\/Hoàng Thị Huyền","title":"Hoàng Thị Huyền","type":"register","zID":"r2147483885"},{"content":"p3 u10 10","path":"học pháp\/tháng 12\/rằm 14\/not register\/Lương Thị Kim Cúc","title":"Lương Thị Kim Cúc","type":"register","zID":"r2147483886"},{"content":"p3 u11 11","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Thịnh","title":"Nguyễn Thị Thịnh","type":"register","zID":"r2147483887"},{"content":"p3 u12 12","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Văn Khiêm","title":"Nguyễn Văn Khiêm","type":"register","zID":"r2147483888"},{"content":"p3 u13 13","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Đăng Thắng","title":"Nguyễn Đăng Thắng","type":"register","zID":"r2147483889"},{"content":"p3 u14 14","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Tú Uyên","title":"Nguyễn Tú Uyên","type":"register","zID":"r2147483890"},{"content":"p3 u15 15","path":"học pháp\/tháng 12\/rằm 14\/not register\/Lê Thị Phương Thảo","title":"Lê Thị Phương Thảo","type":"register","zID":"r2147483891"},{"content":"p3 u16 16","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Hải","title":"Nguyễn Thị Hải","type":"register","zID":"r2147483892"},{"content":"p3 u17 17","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Mạnh Cường","title":"Nguyễn Mạnh Cường","type":"register","zID":"r2147483893"},{"content":"p3 u18 18","path":"học pháp\/tháng 12\/rằm 14\/not register\/Lê Ngọc Quỳnh","title":"Lê Ngọc Quỳnh","type":"register","zID":"r2147483894"},{"content":"p3 u19 19","path":"học pháp\/tháng 12\/rằm 14\/not register\/Dương Thị Hoài Thu","title":"Dương Thị Hoài Thu","type":"register","zID":"r2147483895"},{"content":"p3 u20 20","path":"học pháp\/tháng 12\/rằm 14\/not register\/Đỗ Thị Hà","title":"Đỗ Thị Hà","type":"register","zID":"r2147483896"},{"content":"p3 u21 21","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Tuyết Nhung","title":"Nguyễn Thị Tuyết Nhung","type":"register","zID":"r2147483897"},{"content":"p3 u22 22","path":"học pháp\/tháng 12\/rằm 14\/not register\/Đào Thị Hà","title":"Đào Thị Hà","type":"register","zID":"r2147483898"},{"content":"p3 u23 23","path":"học pháp\/tháng 12\/rằm 14\/not register\/Đinh Ngọc Anh","title":"Đinh Ngọc Anh","type":"register","zID":"r2147483899"},{"content":"p3 u24 24","path":"học pháp\/tháng 12\/rằm 14\/not register\/Trần Văn Khánh","title":"Trần Văn Khánh","type":"register","zID":"r2147483900"},{"content":"p3 u25 25","path":"học pháp\/tháng 12\/rằm 14\/not register\/Lê Thị Điệp","title":"Lê Thị Điệp","type":"register","zID":"r2147483901"},{"content":"p3 u26 26","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Thơm","title":"Nguyễn Thị Thơm","type":"register","zID":"r2147483902"},{"content":"p3 u27 27","path":"học pháp\/tháng 12\/rằm 14\/not register\/Bùi Văn Minh","title":"Bùi Văn Minh","type":"register","zID":"r2147483903"},{"content":"p3 u28 28","path":"học pháp\/tháng 12\/rằm 14\/not register\/Đinh Thị Thanh Thảo","title":"Đinh Thị Thanh Thảo","type":"register","zID":"r2147483904"},{"content":"p3 u29 29","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Quỳnh Anh","title":"Nguyễn Quỳnh Anh","type":"register","zID":"r2147483905"},{"content":"p3 u30 30","path":"học pháp\/tháng 12\/rằm 14\/not register\/Hoàng Thị Thiên","title":"Hoàng Thị Thiên","type":"register","zID":"r2147483906"},{"content":"p3 u31 31","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Nga","title":"Nguyễn Thị Nga","type":"register","zID":"r2147483907"},{"content":"p3 u32 32","path":"học pháp\/tháng 12\/rằm 14\/not register\/Cao Thị Linh","title":"Cao Thị Linh","type":"register","zID":"r2147483908"},{"content":"p3 u33 33","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Văn Hoàng","title":"Nguyễn Văn Hoàng","type":"register","zID":"r2147483909"},{"content":"p3 u34 34","path":"học pháp\/tháng 12\/rằm 14\/not register\/Đỗ Thị Yến","title":"Đỗ Thị Yến","type":"register","zID":"r2147483910"},{"content":"p3 u35 35","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Thu","title":"Nguyễn Thị Thu","type":"register","zID":"r2147483911"},{"content":"p3 u36 36","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Minh Hiếu","title":"Nguyễn Minh Hiếu","type":"register","zID":"r2147483912"},{"content":"p3 u37 37","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Văn Khang","title":"Nguyễn Văn Khang","type":"register","zID":"r2147483913"},{"content":"p3 u38 38","path":"học pháp\/tháng 12\/rằm 14\/not register\/Trần Thị Đăng Quế","title":"Trần Thị Đăng Quế","type":"register","zID":"r2147483914"},{"content":"p3 u39 39","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Ngần","title":"Nguyễn Ngần","type":"register","zID":"r2147483915"},{"content":"p3 u46 46","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Thị Hồng","title":"Nguyễn Thị Hồng","type":"register","zID":"r2147483922"},{"content":"p3 u41 41","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Trung Đức","title":"Nguyễn Trung Đức","type":"register","zID":"r2147483917"},{"content":"p3 u42 42","path":"học pháp\/tháng 12\/rằm 14\/not register\/Vũ Thị Hiền","title":"Vũ Thị Hiền","type":"register","zID":"r2147483918"},{"content":"p3 u43 43","path":"học pháp\/tháng 12\/rằm 14\/not register\/Phạm Thị Bích","title":"Phạm Thị Bích","type":"register","zID":"r2147483919"},{"content":"p3 u44 44","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Anh Tú","title":"Nguyễn Anh Tú","type":"register","zID":"r2147483920"},{"content":"p3 u45 45","path":"học pháp\/tháng 12\/rằm 14\/not register\/Nguyễn Văn Xã","title":"Nguyễn Văn Xã","type":"register","zID":"r2147483921"},{"content":"p3 u47 47","path":"học pháp\/tháng 12\/rằm 14\/not register\/Lê Thị Thu Hà","title":"Lê Thị Thu Hà","type":"register","zID":"r2147483923"}];
+        if (jsTxt != null) {
+            g_lectLst = jsTxt;
+            document.getElementById("id_content").innerHTML = "";
+        }
+        var url = "https://localhost:44336/api/Lectures";
+        url = "https://localhost:5001/api/Lectures";
+        //g_lectLst = getLecturesSync(url); //only work on IE 11
+        //render3(url);
+    </script>
+    <script>
+        function onImgClick(nodeId) {
+            var tNode = g_nodesDict[nodeId];
+            if (tNode.childs == null) return;
+
+            var tImg = document.getElementById(nodeId + "_img");
+            var tDiv = document.getElementById(nodeId + "_childs");
+            tNode.visible = !tNode.visible;
+            if (tNode.visible == true) {
+                //tImg.src = g_impSrc.colapse;
+                tImg.textContent = g_impSrc.colapse;
+                tDiv.hidden = false;
+                stsDelColapsed(nodeId);
+                stsSave();
+            } else {
+                //tImg.src = g_impSrc.expand;
+                tImg.textContent = g_impSrc.expand;
+                tDiv.hidden = true;
+                stsAddColapsed(nodeId);
+                stsSave();
+            }
+        }
+        function onStsClick(nodeId) {
+            var tNode = g_nodesDict[nodeId];
+
+            if (tNode.sts == 1) {
+                tNode.sts = 0;
+            } else {
+                tNode.sts = 1;
+            }
+            updateStsImg(tNode);
+            updateChildSts(tNode);
+            updateParentSts(tNode.parent, tNode.sts);
+
+            //display selected
+            //var tLst = getSelected(rootNode);
+            //displayLect(tLst);
+
+            //save selected title id
+            var sels = [];
+            for (var i in g_nodesDict) {
+                tNode = g_nodesDict[i];
+                if (tNode.sts == 1 && tNode.lect != null) {
+                    sels.push(tNode.lect.zID);
+                }
+            }
+            stsSetSelected(sels);
+            stsSave();
+        }
+
+        function getSelected(rootNode) {
+            var queue = [];
+            if (rootNode.sts != 0) queue.push(rootNode);
+            var leafs = [];
+            while (queue.length > 0) {
+                var tNode = queue.shift();
+                if (tNode.childs == null) {
+                    leafs.push(tNode.lect);
+                } else {
+                    for (var i in tNode.childs) {
+                        if (tNode.childs[i].sts != 0) queue.push(tNode.childs[i]);
+                    }
+                }
+            }
+            return leafs;
+        }
+
+        function onSpanClick(nodeId) {
+            var tNode = g_nodesDict[nodeId];
+            //if (tNode.lect == null) return;
+
+            //var titleId = tNode.lect.ID;
+            //var src = baseUrl + "/" + titleId + ".html";
+            //show("iframe2", true);
+            //document.getElementById("iframe2").src = "titles/" + titleId + ".html";
+            var tDiv = document.getElementById("id_content");
+            var paragraphs = crtParagraphs(tNode);
+            renderPars(paragraphs, tDiv);
+            //g_playingTitle = tNode.lect;
+            //g_playingPar = 0;
+
+            menuShowHide();
+            //stsSetCurTitle(tNode.lect.ID);
+            //stsSave();
+
+            if (tNode.lect != null) {
+
+                g_curTitle = tNode.lect;    //chat
+                updateToLbl();
+            }
+        }
+        function updateToLbl() {
+            var to = document.getElementById("id_chatTo");
+            to.innerText = "To: " + g_curTitle.title;
+        }
+
+        function renderLect(lect) {
+            var tDiv = document.getElementById("id_content");
+            var tNode = g_titlesDict[lect.zID];
+            var paragraphs = crtParagraphs(tNode);
+            renderPars(paragraphs, tDiv);
+        }
+
+        //__in tNode: tree node obj
+        function crtParagraphs(tNode) {
+            var ret = [];
+            var lst = traceNodeDFS(tNode, 0);
+            var iColor = 1;
+            for (var i in lst) {
+                var msg = lst[i].lect;
+                if (msg == null) {
+                }else {
+                    switch (msg.type) {
+                        case "title":
+                        case "program":
+                        case "prog_opt":
+                            var p = {
+                                "zID": msg.zID,
+                                "content": msg.content,
+                                "leftIndent": lst[i].lvl * 10,
+                                "type": msg.type,
+                                "iColor": iColor,
+                            };
+                            ret.push(p);
+                            iColor = iColor + 1;
+                            break;
+                    }
+                }
+            }
+            return ret;
+        }
+        function traceNodeDFS(tNode, lvl) {
+            tNode.lvl = lvl;
+            var lst = [tNode];
+            for (var i in tNode.childs) {
+                clst = traceNodeDFS(tNode.childs[i], lvl+1);
+                lst = lst.concat(clst);
+            }
+            return lst;
+        }
+
+        function renderPars(pars, tDiv) {
+            tDiv.textContent = "";
+            appendPars(pars, tDiv);
+        }
+        function appendPars(pars, tDiv) {
+            for (var i in pars) {
+                var par = pars[i];
+                var aColor = [];
+                aColor.push("#FF86FF");
+                aColor.push("#AAAAFF");
+                aColor.push("#A4F0B7");
+                aColor.push("#EEEEA2");
+                aColor.push("#E9E9BE");
+                aColor.push("#FFB5B5");
+
+                //var el = document.createElement('p');
+                //if (par.alignment == 1) {
+                //    el.style.textAlign = 'center';
+                //} else if (par.alignment == 2) {
+                //    el.style.textAlign = 'right';
+                //}
+                //if (par.fontBold == -1) {
+                //    el.style.fontWeight = 'bold';
+                //}
+                //if (par.fontItalic == -1) {
+                //    el.style.fontStyle = 'italic';
+                //}
+                //el.style.marginLeft = par.leftIndent + "px";
+                //el.style.marginRight = "5px";
+                //el.style.paddingLeft = "5px";
+                //el.style.paddingRight = "5px";
+                //el.innerText = par.content.replace(/\u000b/g, '\r');
+                //el.style.backgroundColor = "rgb(133,240,90)";
+                //if (par.iColor != 0) {
+                //    var aColor = [];
+                //    aColor.push("#FF86FF");
+                //    aColor.push("#AAAAFF");
+                //    aColor.push("#A4F0B7");
+                //    aColor.push("#EEEEA2");
+                //    aColor.push("#E9E9BE");
+                //    aColor.push("#FFB5B5");
+                //    el.style.backgroundColor = aColor[par.iColor];
+                //}
+                //tDiv.appendChild(el);
+
+                var msgColor = "rgb(133, 240, 90)";
+                var iColor = (par.iColor % 6);
+                msgColor = aColor[iColor];
+                var el = tDiv.appendChild(document.createElement("p"));
+                el.style.marginLeft = par.leftIndent + "px";
+                cv_renderMsg(el, par.content, msgColor);
+
+                switch (par.type) {
+                    case "title":
+                        //check box
+                        addCheckBox(el, par);
+                        break;
+                    case "prog_opt":
+                        addOptCheckBox(el, par);
+                        break;
+                }
+            }
+        }
+        function addCheckBox(el,par) {
+            var chk = el.appendChild(document.createElement("button"));
+            chk.id = "id_chk_" + par.zID;
+            chk.textContent = g_impSrc.unlike;
+            if (isTitleLiked(par.zID)) {
+                chk.textContent = g_impSrc.like;
+            }
+            chk.className = "miChkBtn";
+            chk.onclick = function () { onChkClick(par.zID) };
+        }
+        function addOptCheckBox(el,par) {
+            var chk = el.appendChild(document.createElement("button"));
+            chk.id = "id_chk_" + par.zID;
+            chk.textContent = g_impSrc.unlike;
+            if (isOptRegistered(par.zID)) {
+                chk.textContent = g_impSrc.like;
+            }
+            chk.className = "miChkBtn";
+            chk.onclick = function () { onOptClick(par.zID) };
+        }
+
+        //when load
+        function isTitleLiked2(id) {
+            var tnode = g_titlesDict[id];
+            var msg = tnode.lect;
+            var arr = msg.likes.split(",");
+            for (var i in arr) {
+                if (arr[i] == g_user.zID) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //when load complete
+        function isTitleLiked(titleID) {
+            var tnode = g_titlesDict[titleID];
+            if (tnode.lect.type == "title") {
+                var l = tnode.childs["likes"];
+                for (var i in l.childs) {
+                    var c = l.childs[i];
+                    if (c.lect.zID == g_user.zID) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        //when load complete
+        function isOptRegistered(optID) {
+            var tnode = g_titlesDict[optID];
+            if (tnode.lect.type == "prog_opt") {
+                var l = tnode.childs;
+                for (var i in l) {
+                    var c = l[i].lect;
+                    var arr = c.content.split(" ");
+                    var zuID = arr[1];
+                    if (zuID == g_user.zID) {
+                        return c;
+                    }
+                }
+            }
+            return null;
+        }
+
+    </script>
+    <script>
+        //canvas message render
+
+        function cv_renderMsg(div, text, msgColor) {
+            var r = 5;
+            //var w = 100;
+            w = div.clientWidth * 0.75; // 75%
+            w = Math.min(w, 400);       //max msg with
+            var dy = 12;    //font = 12
+            var cv = document.createElement("canvas");
+            div.appendChild(cv);
+            ctx = cv.getContext("2d");
+
+            //split text
+            ctx.fillStyle = "black";
+            ctx.font = "12px Arial";
+            var lines = cv_calCtxSizeH(ctx, text, w);
+            var h = lines.length * dy;
+
+            //resize canvas
+            cv.width = w + 2 * r;
+            cv.height = h + 2 * r;
+
+            //rectangle
+            ctx.fillStyle = msgColor;
+            //ctx.fillRect(0, 0, w, h);
+            cv_roundRect(ctx, 0, 0, w + 2 * r, h + 2 * r, 2 * r, 1, 1);
+
+            //texgt
+            ctx.fillStyle = "black";
+            ctx.font = "12px Arial";
+            var y = dy + r;
+            for (var i in lines) {
+                ctx.fillText(lines[i], r, y);
+                y += dy;
+            }
+
+            return cv;
+        }
+
+        //line contain space at end
+        function cv_calCtxSizeH(ctx, txt, max_w) {
+            var lines = [];
+            var w = 0;
+            var line = "";
+            var arr = txt.split(/\s+/);
+            for (var i in arr) {
+                var size = ctx.measureText(arr[i] + " ");
+                if ((w + size.width) > max_w) {
+                    lines.push(line);
+                    line = ""
+                    w = 0;
+                }
+                line += arr[i] + " ";
+                w += size.width;
+            }
+            lines.push(line);
+            return lines;
+        }
+
+        /**
+         * Draws a rounded rectangle using the current state of the canvas.
+         * If you omit the last three params, it will draw a rectangle
+         * outline with a 5 pixel border radius
+         * @param {CanvasRenderingContext2D} ctx
+         * @param {Number} x The top left x coordinate
+         * @param {Number} y The top left y coordinate
+         * @param {Number} width The width of the rectangle
+         * @param {Number} height The height of the rectangle
+         * @param {Number} [radius = 5] The corner radius; It can also be an object
+         *                 to specify different radii for corners
+         * @param {Number} [radius.tl = 0] Top left
+         * @param {Number} [radius.tr = 0] Top right
+         * @param {Number} [radius.br = 0] Bottom right
+         * @param {Number} [radius.bl = 0] Bottom left
+         * @param {Boolean} [fill = false] Whether to fill the rectangle.
+         * @param {Boolean} [stroke = true] Whether to stroke the rectangle.
+         */
+        function cv_roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof stroke === 'undefined') {
+                stroke = true;
+            }
+            if (typeof radius === 'undefined') {
+                radius = 5;
+            }
+            if (typeof radius === 'number') {
+                radius = { tl: radius, tr: radius, br: radius, bl: radius };
+            } else {
+                var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+                for (var side in defaultRadius) {
+                    radius[side] = radius[side] || defaultRadius[side];
+                }
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + radius.tl, y);
+            ctx.lineTo(x + width - radius.tr, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+            ctx.lineTo(x + width, y + height - radius.br);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+            ctx.lineTo(x + radius.bl, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+            ctx.lineTo(x, y + radius.tl);
+            ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+            ctx.closePath();
+            if (fill) {
+                ctx.fill();
+            }
+            if (stroke) {
+                ctx.stroke();
+            }
+
+        }
+    </script>
+    <script src='https://code.responsivevoice.org/responsivevoice.js'></script>
+    <script>
+        //text to speek
+        var g_speekState = 0; //stoped
+        var g_playingTitle = null;
+        var g_playingPar = 0;
+
+        function onPlayContent() {
+            //g_playingPar = 0;
+            PlayContent();
+        }
+        function onFastForward() {
+            StopSpeek();
+            g_playingPar = g_playingPar + 1;
+            if (g_playingPar < g_playingTitle.paragraphs.length) {
+                PlayContent();
+            } else {
+                //g_playingPar = 0;
+            }
+        }
+        function onBackward() {
+            StopSpeek();
+            g_playingPar = g_playingPar - 1;
+            if (g_playingPar < 0) {
+                g_playingPar = 0;
+            }
+            PlayContent();
+        }
+        function onNextTitle() {
+            StopSpeek();
+            g_playingPar = g_playingTitle.paragraphs.length - 1;
+            PlayContent();
+        }
+        function onPrevTitle() {
+            StopSpeek();
+            g_playingPar = 0;
+            PlayContent();
+        }
+        function PlayContent() {
+            var btn = document.getElementById("id_playContent");
+            var spn = document.getElementById("id_playContentSts");
+            switch (g_speekState) {
+                case 0: //stoped ->play
+                    spn.innerText = getPlayStsMsg(1);
+                    g_speekState = 1;
+                    //var txt = document.getElementById("id_content").innerText;
+                    var txt = g_playingTitle.paragraphs[g_playingPar].content.replace(/\u000b/g, '\r');
+                    playSpeek(txt);
+                    btn.textContent = "⏸️";
+                    parScroll(g_playingPar);    //auto scroll
+                    break;
+                case 1: //play ->pause
+                    spn.innerHTML = getPlayStsMsg(2);
+                    g_speekState = 2;
+                    pauseSpeek();
+                    //btn.innerText = "⏯️";
+                    btn.textContent = "⏯️";
+                    break;
+                case 2: //pause ->play
+                    spn.innerText = getPlayStsMsg(1);
+                    g_speekState = 1;
+                    resumeSpeek();
+                    btn.innerHTML = "⏸️";
+                    break;
+            }
+        }
+        function getPlayStsMsg(mode) {
+            var msg = ""
+            switch (mode) {
+                case 1: //playing
+                    msg = "playing";
+                    break;
+                case 2: //pause
+                    msg = "paused&nbsp;"
+                    break;
+                case 0: //stop
+                    msg = "stoped&nbsp;"
+                    break;
+            }
+            return msg + ':' + g_playingPar + '/' + g_playingTitle.paragraphs.length;
+        }
+        function onStopSpeek() {
+            StopSpeek();
+        }
+        function StopSpeek() {
+            var btn = document.getElementById("id_playContent");
+            var spn = document.getElementById("id_playContentSts");
+            switch (g_speekState) {
+                case 1:
+                case 2:
+                case 3:
+                    spn.innerHTML = getPlayStsMsg(0);
+                    g_speekState = 0;
+                    stopSpeek();
+                    btn.textContent = "⏯️";
+                    break;
+            }
+        }
+        function onSpeedBegin() {
+            //alert("onbegin");
+        }
+        function onSpeekEnd() {
+            //alert("onend");
+            g_playingPar = g_playingPar + 1;
+            StopSpeek();
+            if (g_playingPar < g_playingTitle.paragraphs.length) {
+                PlayContent();
+            } else {
+                //g_playingPar = 0;
+            }
+        }
+        function pauseSpeek() {
+            responsiveVoice.pause();
+        }
+        function resumeSpeek() {
+            responsiveVoice.resume();
+        }
+        function stopSpeek() {
+            responsiveVoice.cancel();
+        }
+        function playSpeek(txt) {
+            var parameters = {
+                onstart: onSpeedBegin,
+                onend: onSpeekEnd
+            }
+            responsiveVoice.speak(txt, "Vietnamese Female", parameters);
+        }
+        function parScroll(parIndex) {
+            var d = document.getElementById("id_content");
+            var p = d.childNodes[parIndex];
+            d.scrollTop = p.offsetTop;
+        }
+        //on content scroll ->display par
+        function displayReadingPar() {
+            if (g_speekState != 0) return;
+            var d = document.getElementById("id_content");
+            for (var i in d.childNodes) {
+                var p = d.childNodes[i];
+                if (d.scrollTop <= p.offsetTop) {
+                    var spn = document.getElementById("id_playContentSts");
+                    g_playingPar = parseInt(i);
+                    spn.innerHTML = getPlayStsMsg(0);
+                    break;
+                }
+            }
+        }
+    </script>
+    <script>
+        //show hide menu
+        var menuVisible = true;
+        function menuShowHide() {
+            menuVisible = !menuVisible;
+            var tdiv = document.getElementById("id_menu");
+            if (menuVisible) {
+                tdiv.style.display = "table-cell";
+            } else {
+                tdiv.style.display = "none";
+            }
+        }
+    </script>
+    <script>
+        //main part1//////////
+        //hide frame
+        var m_scale = 3 / 4;;
+        //show("player", false);
+        //show("mp4player", false);
+        //show("mp3player", false);
+        //document.getElementById("log").innerHTML = "browser: " + who();
+
+        //lecture
+        //displayLect(g_lectLst);
+    </script>
+    <script>
+        function displayLect(lectLst) {
+            var jsObj = {
+                "cols": ["tieu de", "người giảng", "doi tuong", "chu de", "ngày", "noi dung", "link"],
+                "recs": lectLst,
+            };
+
+            var txt = "";
+            txt += '<table style="width: 100%;">';
+            txt += "<tr>";
+            var cols = jsObj.cols;
+            var i;
+            for (i in cols) {
+                txt += '<th class="col1">' + cols[i] + '</th>';
+            }
+            txt += "</tr>";
+            for (i in jsObj.recs) {
+                rec = jsObj.recs[i];
+                txt += "<tr>";
+                txt += "<td>" + rec.title + "</td>";
+                txt += "<td>" + rec.author + "</td>";
+                txt += "<td>" + rec.target + "</td>";
+                txt += "<td>" + rec.topic + "</td>";
+                //txt += "<td>" + getDate(rec.created) + "</td>";
+                txt += "<td>" + rec.content + "</td>";
+                //txt += "<td>" + genRef(i, rec.link) + "</td>";
+                txt += "</tr>";
+            }
+            txt += "</table>";
+            document.getElementById("lectTbl").innerHTML = txt;
+        }
+
+        function genRef(i, lnk) {
+            var m = lnk.match(/(\.mp4$|\.mp3$|youtube\.com)/i);
+            var lbl = "link";
+            if (m != null) {
+                lbl = m[0];
+            }
+            btnid = "btn" + i;
+            txt = '<span class="lnkBtn" onclick="jsfunction(' + "'" + btnid + "," + lnk + "'" + ')"  id="' + btnid + '" >' + lbl + '</span>';
+            return txt;
+        }
+
+        function jsfunction(arg) {
+            arr = arg.split(",");
+            var id = arr[0];
+            var lnk = arr[1];
+
+            //check browser
+            //str = who();
+            //n = str.search(/Chrome|Edge|Firefox|Netscape/i)
+            var n = 0;
+            if (n == -1) {
+                document.getElementById("log").innerHTML = "Can not play: [" + lnk + "] on " + str;
+                return;
+            }
+
+            var lnkObj = getLnkObj(lnk);
+
+            switch (lnkObj.lnkType) {
+                case "mp4":
+                    //play file.mp4
+                    show("player", false);
+                    show("mp4player", true);
+                    show("mp3player", false);
+                    document.getElementById("video1").src = lnkObj.lnk;
+                    break;
+                case "mp3":
+                    //play file.mp3
+                    show("player", false);
+                    show("mp4player", false);
+                    show("mp3player", true);
+                    document.getElementById("audio1").src = lnkObj.lnk;
+                    break;
+                case "youtube":
+                    show("player", true);
+                    show("mp4player", false);
+                    show("mp3player", false);
+                    resize("frame1", 720);
+                    document.getElementById("frame1").src = lnkObj.lnk + "?autoplay=1";
+                    break;
+            }
+            document.getElementById("log").innerHTML = "playing:" + lnkObj.lnk;
+        }
+    </script>
+    <script>
+        //scroll
+        function onScroll(e) {
+            var h = e.target.scrollHeight;
+            var t = e.target.scrollTop;
+            var show = ((t * 100 / h) > 50);
+            if (show) {
+                document.getElementById("id_gotoTopBtn").style.display = "block";
+            }
+            else {
+                document.getElementById("id_gotoTopBtn").style.display = "none";
+            }
+
+            //display par no
+            displayReadingPar();
+        }
+        function gotoTop() {
+            document.getElementById("id_content").scrollTop = 0;
+        }
+    </script>
+    <script>
+        //adjust ctrl pos
+        function adjCtrlsPos() {
+            adjTopCtrlsPos();
+            adjContentPos();
+            adjMenuPos();
+        }
+
+        function adjTopCtrlsPos() {
+            var d = document.getElementById("id_topCtrls");
+            d.style.width = document.body.offsetWidth - 10 + "px";
+
+        }
+        function adjContentPos() {
+            var d_topCtrls = document.getElementById("id_topCtrls");
+            var d = document.getElementById("id_content");
+            d.style.top = d_topCtrls.offsetTop + d_topCtrls.offsetHeight;
+            d.style.width = document.body.clientWidth - 10 + "px";
+        }
+        function adjMenuPos() {
+            var d_topCtrls = document.getElementById("id_topCtrls");
+            var d = document.getElementById("id_menu");
+            d.style.top = d_topCtrls.offsetTop + d_topCtrls.offsetHeight;
+        }
+    </script>
+    <script>
+        function ctrlsResize() {
+            var cw = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            var ch = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            var l = 5;
+            var r = 5;
+            var t = 5;
+            var b = 5;
+            //top ctrls
+            w = cw - l - r;
+            var topctrls = document.getElementById("id_topCtrls");
+            adjCtrlSize(topctrls,"top",t);
+            adjCtrlSize(topctrls,"left",l);
+            adjCtrlSize(topctrls,"width",w);
+            //menu
+            t += topctrls.offsetHeight;
+            h = ch - t - b;
+            var menu = document.getElementById("id_menu");
+            adjCtrlSize(menu,"top",t);
+            adjCtrlSize(menu,"width",(g_ratio < 1.5) ? 0.4 * w : 0.8 * w);
+            adjCtrlSize(menu,"height",h);
+            //content
+            var cont = document.getElementById("id_content");
+            adjCtrlSize(cont,"top",t);
+            adjCtrlSize(cont,"left",l);
+            adjCtrlSize(cont,"width",w);
+            adjCtrlSize(cont,"height",h);
+            //bot ctrls
+            var botctrls = document.getElementById("id_botCtrls");
+            adjCtrlSize(botctrls,"right",r);
+            adjCtrlSize(botctrls,"bottom",b);
+            //goto top btn
+            var gtbtn = document.getElementById("id_gotoTopBtn")
+            adjCtrlSize(gtbtn,"right",r);
+            adjCtrlSize(gtbtn,"bottom",b+botctrls.offsetHeight);
+        }
+        function adjCtrlSize(e, type, val){
+            var oldStyle = e.getAttribute("style");
+            var pats = {
+                "width": /width[ :]+\d+(%|px)/g,
+                "height": /height[ :]+\d+(%|px)/g,
+                "top": /top[ :]+\d+(%|px)/g,
+                "left": /left[ :]+\d+(%|px)/g,
+                "right": /right[ :]+\d+(%|px)/g,
+                "bottom": /bottom[ :]+\d+(%|px)/g
+                };
+            var newStyle;
+            var pat = pats[type];
+            if (pat.test(oldStyle)) {
+                newStyle = oldStyle.replace(pat, type + ":" + val + "px");
+            } else {
+                newStyle = type + ":" + val + "px;" + oldStyle;
+            }
+            e.setAttribute("style", newStyle);
+        }
+        //function adjMenuSize(ratio) {
+        //    var m = document.getElementById("id_menu");
+        //    var w = document.body.clientWidth;
+        //    if (ratio < 1.5) {
+        //        w = 0.4 * w;
+        //    } else {
+        //        w = 0.8 * w;
+        //    }
+        //    m.style.width = w + 'px';
+        //}
+
+        //font adjust
+        var g_baseFontSize = 16;
+        function onAdjFont() {
+            adjFont(g_ratio);
+        }
+        function adjFont(ratio) {
+            var el = document.getElementById("id_sutraTitle");
+            //var w = el.offsetWidth;
+            //var key = el.innerText;
+            //var d = {
+            //    "Ðại Tạng Kinh Việt Nam": [161, 170, 181],   //normal, bold, larger
+            //};
+            //var baseW = (d[key] != null) ? d[key][1] : w;
+            //var scale = baseW * 1000 / w * ratio;
+
+            //get current font-size
+            var css = getComputedStyle(el, null);
+            var style = css.getPropertyValue("font-size");
+            var size = parseFloat(style);
+            var scale = g_baseFontSize * 1000 / size * ratio;
+
+            //document.getElementById("log").innerText += " scale:" + scale;
+            chgFontSize(scale);
+            ctrlsResize();
+        }
+        function decFont() {
+            //document.getElementById("log").innerText += " decFont:";
+            chgFontSize(900)
+            ctrlsResize();
+        }
+        function incFont() {
+            //document.getElementById("log").innerText += " incFont:";
+            chgFontSize(1100)
+            ctrlsResize();
+        }
+
+        function chgFontSize(scale) {
+            //for (var i in document.childNodes) {
+            //    var child = document.childNodes[i];
+            //    chgFontSizeR(child, scale);
+            //}
+            chgFontSize2("button.miImgBtn", scale);
+            chgFontSize2("button.miStsBtn", scale);
+            chgFontSize2("button.fontBtn", scale);
+            chgFontSize2("button.playBtn", scale);
+            chgFontSize2("span.miLabel", scale);
+            chgElementFontSize(document.body, scale);     //effect to all [span, p]
+            //chgElementFontSize(document.getElementById("id_toggleMenuBtn"), scale);
+            chgElementFontSize(document.getElementById("id_sutraTitle"), scale);
+        }
+        function chgFontSizeR(el, scale) {
+            for (var i in el.childNodes) {
+                var child = el.childNodes[i];
+                chgFontSizeR(child, scale);
+            }
+            var id = el.id;
+            if (id === undefined) return;
+            if (id == "") return;
+
+            var css = getComputedStyle(el, null);
+            if (css != null) {
+                var style = css.getPropertyValue("font-size");
+                var size = parseFloat(style) * scale / 1000;
+                el.style.fontSize = size + 'px';
+            }
+        }
+        function getScreenSizeInfo() {
+            var ratio = window.devicePixelRatio || 1;
+            var is_touch_device = 'ontouchstart' in document.documentElement;
+            var touch_status = (is_touch_device) ? 'touch' : 'no-touch';
+            touch_status = ' ts:' + touch_status;
+            var width_height = 'wh:' + screen.width + 'x' + screen.height;
+            var client_width_height = ' cwh:' + document.documentElement.clientWidth + 'x' + document.documentElement.clientHeight;
+            var rw = screen.width * ratio;
+            var rh = screen.height * ratio;
+            var ratio_width_height = ' r:' + ratio + ' rwh:' + rw + 'x' + rh;
+            var data_string = width_height + client_width_height + ratio_width_height + touch_status;
+            return data_string;
+        }
+        function chgFontSize2(className, scale) {
+            var i = className.indexOf('.');
+            var elClass = i == -1 ? className : className.substr(i + 1);
+            var el = document.getElementsByClassName(elClass);
+            var css = getComputedStyle(el[0], null);
+            var style = css.getPropertyValue("font-size");
+            var size = parseFloat(style) * scale / 1000;
+            //el.style.fontSize = size + 'px';
+            var rule = getStyleRule(className);
+            rule.style['font-size'] = size + 'px';
+        }
+        function chgElementFontSize(el, scale) {
+            var css = getComputedStyle(el, null);
+            var style = css.getPropertyValue("font-size");
+            var size = parseFloat(style) * scale / 1000;
+            el.style.fontSize = size + 'px';
+        }
+        function chgTblFontSize(scale) {
+            var els = document.getElementsByTagName("table");
+            for (var i in els) {
+                var el = els[i];
+                var css = getComputedStyle(el, null);
+                if (css == null) continue;
+                var style = css.getPropertyValue("font-size");
+                var size = parseFloat(style) * scale / 1000;
+                el.style.fontSize = size + 'px';
+            }
+        }
+    </script>
+    <script>
+        //cookie
+        var g_stsData = {
+            "selTitles": [],
+            "curTitle": 0,
+            "collapsedLst": [],
+        };
+
+        function ck_restore() {
+            stsRestore();
+
+            //selected
+            var sels = g_stsData.selTitles;
+            for (var i in sels) {
+                var id = sels[i];
+                var tNode = g_titlesDict[id];
+                //onStsClick(node.id);
+                if (tNode.sts == 1) {
+                    tNode.sts = 0;
+                } else {
+                    tNode.sts = 1;
+                }
+                updateStsImg(tNode);
+                updateChildSts(tNode);
+                updateParentSts(tNode.parent, tNode.sts);
+            }
+            //current title
+            if (g_stsData.curTitle != 0) {
+                var tNode = g_titlesDict[g_stsData.curTitle];
+                var tDiv = document.getElementById("id_content");
+                renderPars(tNode.lect.paragraphs, tDiv);
+            }
+            //collapsed
+            var clps = g_stsData.collapsedLst;
+            for (var i in clps) {
+                var nodeId = clps[i];
+                var tNode = g_nodesDict[nodeId];
+                tNode.visible = false;
+                var tDiv = document.getElementById(nodeId + "_childs");
+                var tImg = document.getElementById(nodeId + "_img");
+                tImg.textContent = g_impSrc.expand;
+                tDiv.hidden = true;
+            }
+
+        }
+
+        function stsAddColapsed(nodeId) {
+            //var tDict = g_stsData.colapsedDict;
+            //tDict[node.id] = node;
+            g_stsData.collapsedLst.push(nodeId);
+        }
+        function stsDelColapsed(nodeId) {
+            //var tDict = g_stsData.colapsedDict;
+            //delete tDict[node.id];
+            lstRemove(g_stsData.collapsedLst, nodeId);
+        }
+
+        function stsSetCurTitle(id) {
+            g_stsData.curTitle = id;
+        }
+        function stsSetSelected(sels) {
+            g_stsData.selTitles = sels;
+        }
+        function stsAddSelected(id) {
+            g_stsData.push(id);
+        }
+        function stsDelSelected(id) {
+            var a = g_stsData.selTitles;
+            for (var i in a) {
+                if (a[i] == id) {
+                    a.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        function stsRestore() {
+            var a = document.cookie.split(";");
+            if (a.length > 1) {
+                g_stsData = JSON.parse(a[0]);
+            }
+        }
+        function stsSave() {
+            var txt = JSON.stringify(g_stsData);
+            var dt = new Date();
+            dt.setDate(dt.getDate() + 7);
+            document.cookie = txt;
+            document.cookie = "expires=" + dt.toUTCString();
+        }
+        function lstRemove(a, id) {
+            for (var i in a) {
+                if (a[i] == id) {
+                    a.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    </script>
+    <script>
+        //adj css style for modile
+        function getStyleRule(unique_title) {
+            for (var i = 0; i < document.styleSheets.length; i++) {
+                var sheet = document.styleSheets[i];
+                for (var j in sheet.cssRules) {
+                    var rule = sheet.cssRules[j];
+                    if (rule.selectorText == unique_title) {
+                        return rule;
+                    }
+                }
+            }
+        }
+        function adjCssStyle(isAndroid) {
+            if (isAndroid) {
+                var rule = getStyleRule("button.miStsBtn");
+                rule.style['margin-top'] = '-5px';
+                rule.style['font-family'] = 'Cambria Math';
+                rule.style['transform'] = 'scale(1.5, 1.5)';
+
+                var r2 = getStyleRule("button.miImgBtn");
+                r2.style['margin-top'] = '6px';
+                r2.style['font-family'] = 'Cambria, Cochin, Georgia, Times, Times New Roman, serif';
+                r2.style['transform'] = 'scale(1, 1)';
+
+                var r3 = getStyleRule("button.playBtn");
+                r3.style['transform'] = 'scale(1.4, 1.4)';
+                r3.style['margin-right'] = '10px';
+                r3.style['margin-left'] = '10px';
+
+                g_impSrc = {
+                    "expand": "＋", //"▷＋",
+                    "colapse": "－", //"▽－",
+                    "noop": "　",
+                    "checked": "◼",
+                    "uncheck": "◻",
+                    "gray": "▣",
+                };
+            }
+        }
+    </script>
+    <script>
+        function updateSutraTitle() {
+            var d = document.getElementById("id_sutraTitle");
+            //var path = g_lectLst[0].path;
+            //n = path.indexOf('/');
+            //d.innerText = path.substr(0,n);
+            d.innerText = document.getElementById("root_0_span").innerText;
+        }
+    </script>
+    <script>
+        function renderAllTites() {
+            renderTitles(g_lectLst, document.getElementById("id_content"));
+        }
+        function renderTitles(titles, parent, len) {
+            var prevt2 = "";
+            for (var ti in titles) {
+                var t = titles[ti];
+                var end = t.path.length - t.title.length;
+                var t2 = t.path.slice(len + 1, end - 1);
+                if (t2 != prevt2) {
+                    var h2 = parent.appendChild(document.createElement('h2'));
+                    h2.style.textAlign = 'center';
+                    h2.innerText = t2.replace('/', '\r');
+                    prevt2 = t2;
+                }
+
+                var d = parent.appendChild(document.createElement('div'));
+                    d.style.pageBreakAfter = 'always';
+                var pars = t.paragraphs;
+                var h3 = d.appendChild(document.createElement('h3'));
+                h3.innerText = pars[0].content;
+                h3.style.textAlign = 'center';
+                for (var i = 1; i < pars.length;i++) {
+                    var par = pars[i];
+                    var el = document.createElement('p');
+                    if (par.alignment == 1) {
+                        el.style.textAlign = 'center';
+                    }
+                    if (par.fontBold == -1) {
+                        el.style.fontWeight = 'bold';
+                    }
+                    if (par.fontItalic == -1) {
+                        el.style.fontStyle = 'italic';
+                    }
+                    el.style.paddingLeft = par.leftIndent;
+                    el.innerText = par.content.replace(/\u000b/g, '\r');
+                    d.appendChild(el);
+                }
+            }
+        }
+        function printAll() {
+            var answer = window.prompt("print ration (for mobie: 3 / for desktop: 1)", "3");
+            var ratio = parseFloat(answer);
+
+            var a = window.open('', '', 'height=500, width=500');
+            a.document.write('<style>@page {size: auto;  margin: 0mm; }</style>');
+            a.document.close();
+            var span0 = document.getElementById("root_0_span");
+            var t1 = span0.innerText;
+            a.document.title = t1;
+
+            var d = a.document.body.appendChild(a.document.createElement('div'));
+            var css = getComputedStyle(span0, null);
+            var s = css.getPropertyValue('font-size');
+            d.style.fontSize = parseFloat(s) * ratio;
+            d.style.padding = 30;
+
+            var h1 = d.appendChild(a.document.createElement('h1'));
+            h1.style.textAlign = 'center';
+            h1.innerText = t1;
+
+            var arr = [];
+            for (var k in g_nodesDict) {
+                var node = g_nodesDict[k];
+                arr.push(node.name);
+                if (node.childs == null) { arr = arr.slice(0, 1); break;}
+                if (Object.keys(node.childs).length > 1) { break; }
+            }
+            t1 = arr.join('\r');
+            a.document.title = t1;
+            h1.innerText = t1;
+            
+            renderTitles(g_lectLst, d, t1.length);
+            //a.oncancel = function () { alert('cancel')};
+            //a.onafterprint = function () { alert('after print') };
+            a.print();
+            a.close();    //ok on chrome
+        } 
+    </script>
+    <script>
+        var g_user = {
+            "name":"user1",
+            "zID": "u1",
+            "phapdanh":"phap danh 1",
+            };
+
+        //chat
+        function onSendChat() {
+            var curTitle = g_curTitle;
+            switch (curTitle.type) {
+                case "program":
+                    registerProg();
+                    break;
+                default:
+                    addNewMsg();
+                    break;
+            }
+        }
+        function addNewMsg() {
+            var curTitle = g_curTitle;
+            var ta = document.getElementById("id_chatEdt");
+            var msgTxt = ta.value;
+            var path = curTitle.path;
+            var newMsg = {
+                "content": msgTxt,
+                "path": path,
+                "type": "title"
+            };
+            req_addNewMsg(newMsg);
+        }
+        function onSendChatDone(znewMsg) {
+            //alert(znewMsg);
+            var newMsg = JSON.parse(znewMsg);
+            addLectItem(g_rootNode, newMsg);    //update tree
+            var tNode = g_titlesDict[newMsg.zID];
+            var paragraphs = crtParagraphs(tNode);
+            var tDiv = document.getElementById("id_content");
+            appendPars(paragraphs, tDiv);
+
+            var ta = document.getElementById("id_chatEdt");
+            ta.value = "";
+        }
+        function onChkClick(msgId) {
+            var tnode = g_titlesDict[msgId];
+            var msg = tnode.lect;
+            var isLiked = isTitleLiked(msg.zID);
+            var newMsg = {
+                "type": "like",
+                "content": g_user.zID,
+                "path": msg.path,
+                "zID": msg.zID
+            };
+            if (isLiked) {
+                newMsg.type = "unlike";
+            }
+            req_addLikeMsg(newMsg);
+        }
+        function onUpdateMsgChkDone(zmsg) {
+            var msg = JSON.parse(zmsg);
+            var chkId = "id_chk_" + msg.zID;
+            var chk = document.getElementById(chkId);
+            var u = {
+                "title": msg.title,
+                "path": msg.path + "/likes/" + msg.title,
+                "type": "user",
+                "zID": msg.content,
+            };
+            var tnode = g_titlesDict[msg.zID];
+            var t = tnode.lect;
+            if (msg.type == "unlike") {
+                chk.textContent = g_impSrc.unlike;
+                rmLectItem(g_rootNode, u);    //update tree
+            } else {
+                chk.textContent = g_impSrc.like;
+                addLectItem(g_rootNode, u);    //update tree
+            }
+
+            var l = tnode.childs["likes"];
+            showHideCollapsed(l);
+        }
+
+    </script>
+    <script>
+        //program
+        //option toggle event
+        function onOptClick(msgId) {
+            var tnode = g_titlesDict[msgId];
+            var opt = tnode.lect;
+            var zIdx = opt.zID.replace(/p\d+_opt/, "");
+            toggleProgReg(zIdx);
+        }
+        function registerProg() {
+            var ta = document.getElementById("id_chatEdt");
+            var zOpt = ta.value.replace(/\//g,"-");
+            toggleProgReg(zOpt);
+        }
+        function toggleProgReg(zOpt) {
+            var tProg = g_curTitle;
+            var reg = {
+                "type": "register",
+                "content": tProg.zID + " " + g_user.zID + " " + zOpt,
+                "zID": "rxxx",
+                "path": tProg.path
+            };
+            var arr = zOpt.split(" ");
+            var optzID = mkOptzID(tProg.zID, arr[0]);
+            if (isOptRegistered(optzID)) {
+                reg.type = "unregister";
+            }
+            req_addNewProgReg(reg);
+        }
+        function req_addNewProgReg(newReg) {
+            if (0) {
+                onAddNewProgRegDone(JSON.stringify(newReg));
+            } else {
+                var fname = "addProgReg";
+                var parameter = JSON.stringify(newReg);
+                var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+                document.dispatchEvent(event);
+            }
+        }
+        function onAddNewProgRegDone(zreg) {
+            var reg = JSON.parse(zreg);
+            var arr = reg.content.split(" ");   //<prog.zID> <user.zID> <opt idx>
+            var progzID = arr[0];
+            var progNode = g_titlesDict[progzID];   //program
+            var tProg = progNode.lect;
+            var optzIdx = mkOptzID(tProg.zID, arr[2]);
+            var optNode = g_titlesDict[optzIdx];
+            var tOpt = optNode.lect;
+            reg.title = reg.content.replace(/^p\d+ u\d+ \d+/, g_user.name);
+            var u = {
+                "title": reg.title,
+                "path": tOpt.path + "/" + reg.title,
+                "type": "register",
+                "content": reg.content,
+                "zID": reg.zID,
+            };
+            if (reg.type == "unregister") {
+                var old = isOptRegistered(tOpt.zID);
+                rmLectItem(g_rootNode, old);    //update tree
+            } else {
+                //remove old registered opt
+                for (var i in progNode.childs) {
+                    var otherOpt = progNode.childs[i].lect;
+                    var old = isOptRegistered(otherOpt.zID);
+                    if (old != null) {
+                        rmLectItem(g_rootNode, old);
+                        var chkBoxOld = getChkBoxEl(otherOpt.zID);
+                        chkBoxOld.textContent = g_impSrc.unlike;
+                    }
+                }
+                //add new register
+                addLectItem(g_rootNode, u);    //update tree
+            }
+
+            showHideCollapsed(optNode);
+
+            var chkBox = getChkBoxEl(tOpt.zID);
+            if (isOptRegistered(tOpt.zID)) {
+                chkBox.textContent = g_impSrc.like;
+            } else {
+                chkBox.textContent = g_impSrc.unlike;
+            }
+        }
+    </script>
+    <script>
+        //converter
+        function getChkBoxEl(optzID) {
+            var el = document.getElementById("id_chk_" + optzID);
+            return el;
+        }
+        function mkChkBoxID(optzID) {
+            return "id_chk_" + optzID;
+        }
+        function mkOptzID(progzID, optzIdx) {
+            var optzID = progzID + "_opt" + optzIdx;
+            return optzID;
+        }
+    </script>
+    <script>
+        //db
+        function req_addNewMsg(newMsg) {
+            var fname = "addNewMsg";
+            var parameter = JSON.stringify(newMsg);
+            var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+            document.dispatchEvent(event);
+        }
+        function req_addLikeMsg(msg) {
+            if (0) {
+                msg.title = "user1"
+                onUpdateMsgChkDone(JSON.stringify(msg));
+            } else {
+                var fname = "addLikeMsg";
+                var parameter = JSON.stringify(msg);
+                var event = new MessageEvent(fname, { 'view': window, 'bubbles': false, 'cancelable': false, 'data': parameter });
+                document.dispatchEvent(event);
+            }
+        }
+
+    </script>
+    <script>
+        //mainx1() - part x1
+        document.getElementById("id_gotoTopBtn").style.display = "none";
+        document.getElementById("id_gotoTopBtn").hidden="hidden";
+        window.onscroll = onScroll;
+        document.getElementById("id_content").onscroll = onscroll;
+
+        //mainx2() - part x2
+        var g_ratio = window.devicePixelRatio || 1;
+        //document.getElementById("log").innerText = "ration:" + ratio;
+        //adjMenuSize(g_ratio);
+        window.onresize = ctrlsResize;
+
+        var g_isAndroid = g_ratio > 1.5;
+        adjCssStyle(g_isAndroid);
+
+        render1(g_lectLst); //render tree
+        showHideCollapsed(g_rootNode);
+        //updateSutraTitle();
+
+        adjFont(g_ratio);
+        ctrlsResize();
+
+        g_playingTitle = g_lectLst[0];
+        g_playingPar = 0;
+        renderLect(g_lectLst[0]);
+
+        g_curTitle = g_lectLst[0];  //chat
+        updateToLbl();              //to
+
+        menuShowHide();
+
+        ck_restore();   //restore cookie
+    </script>
+</body>
+</html>

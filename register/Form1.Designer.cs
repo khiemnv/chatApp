@@ -35,6 +35,10 @@ namespace register
             this.openDbToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFormToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.usersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mettingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.userCmb = new System.Windows.Forms.ComboBox();
             this.progCmb = new System.Windows.Forms.ComboBox();
@@ -49,6 +53,7 @@ namespace register
             this.tagLstBx = new System.Windows.Forms.CheckedListBox();
             this.label4 = new System.Windows.Forms.Label();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.updateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -74,7 +79,8 @@ namespace register
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.usersToolStripMenuItem});
+            this.usersToolStripMenuItem,
+            this.reportToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(608, 24);
@@ -106,10 +112,43 @@ namespace register
             // 
             // usersToolStripMenuItem
             // 
+            this.usersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editToolStripMenuItem,
+            this.refreshToolStripMenuItem,
+            this.updateToolStripMenuItem});
             this.usersToolStripMenuItem.Name = "usersToolStripMenuItem";
             this.usersToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.usersToolStripMenuItem.Text = "users";
             this.usersToolStripMenuItem.Click += new System.EventHandler(this.usersToolStripMenuItem_Click);
+            // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.editToolStripMenuItem.Text = "Edit";
+            this.editToolStripMenuItem.Click += new System.EventHandler(this.editToolStripMenuItem_Click);
+            // 
+            // refreshToolStripMenuItem
+            // 
+            this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
+            this.refreshToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.refreshToolStripMenuItem.Text = "Refresh";
+            this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
+            // 
+            // reportToolStripMenuItem
+            // 
+            this.reportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mettingToolStripMenuItem});
+            this.reportToolStripMenuItem.Name = "reportToolStripMenuItem";
+            this.reportToolStripMenuItem.Size = new System.Drawing.Size(51, 20);
+            this.reportToolStripMenuItem.Text = "report";
+            // 
+            // mettingToolStripMenuItem
+            // 
+            this.mettingToolStripMenuItem.Name = "mettingToolStripMenuItem";
+            this.mettingToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.mettingToolStripMenuItem.Text = "metting";
+            this.mettingToolStripMenuItem.Click += new System.EventHandler(this.mettingToolStripMenuItem_Click);
             // 
             // treeView1
             // 
@@ -149,7 +188,7 @@ namespace register
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 32);
+            this.label2.Location = new System.Drawing.Point(22, 29);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(27, 12);
             this.label2.TabIndex = 9;
@@ -238,16 +277,19 @@ namespace register
             // 
             // tagLstBx
             // 
+            this.tagLstBx.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tagLstBx.FormattingEnabled = true;
-            this.tagLstBx.Location = new System.Drawing.Point(264, 29);
+            this.tagLstBx.Location = new System.Drawing.Point(256, 31);
+            this.tagLstBx.MultiColumn = true;
             this.tagLstBx.Name = "tagLstBx";
-            this.tagLstBx.Size = new System.Drawing.Size(120, 88);
+            this.tagLstBx.Size = new System.Drawing.Size(143, 158);
             this.tagLstBx.TabIndex = 14;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(237, 36);
+            this.label4.Location = new System.Drawing.Point(229, 32);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(21, 12);
             this.label4.TabIndex = 13;
@@ -255,11 +297,18 @@ namespace register
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(-1, 206);
+            this.richTextBox1.Location = new System.Drawing.Point(-1, 195);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(400, 114);
+            this.richTextBox1.Size = new System.Drawing.Size(400, 125);
             this.richTextBox1.TabIndex = 12;
             this.richTextBox1.Text = "";
+            // 
+            // updateToolStripMenuItem
+            // 
+            this.updateToolStripMenuItem.Name = "updateToolStripMenuItem";
+            this.updateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.updateToolStripMenuItem.Text = "Update";
+            this.updateToolStripMenuItem.Click += new System.EventHandler(this.updateToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -308,6 +357,11 @@ namespace register
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.TreeView programTV;
         private System.Windows.Forms.ToolStripMenuItem usersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reportToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mettingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem updateToolStripMenuItem;
     }
 }
 

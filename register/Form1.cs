@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,6 +12,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace register
 {
@@ -128,6 +132,29 @@ namespace register
 
             //default add button
             this.AcceptButton = addBtn;
+
+            //restore size
+            this.FormClosed += Form1_FormClosed;
+            {
+                var location = ConfigMng.CfgRead("MainWndLocation") as string;
+                var wndSize = ConfigMng.CfgRead("MainWndSize")as string;
+                if (location != null)
+                {
+                    this.Location = JsonConvert.DeserializeObject<Point>( location);
+                    this.Size = JsonConvert.DeserializeObject<Size>(wndSize);
+                }
+            }
+
+            
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Normal)
+            {
+                ConfigMng.CfgWrite("MainWndLocation", JsonConvert.SerializeObject(this.Location));
+                ConfigMng.CfgWrite("MainWndSize", JsonConvert.SerializeObject(this.Size));
+            }
         }
 
         private void OnCrtNewProg(object sender, EventArgs e)
@@ -594,9 +621,13 @@ namespace register
                 //var nOpt = p.Key;
 
                 richTextBox1.SelectionFont = new Font(old, FontStyle.Bold);
-                richTextBox1.SelectedText = string.Format("{0} ({1})\n", nOpt, titles.Count);
+                richTextBox1.SelectedText = string.Format("{1}\t{0}\n", nOpt, titles.Count);
                 richTextBox1.SelectionFont = old;
-                string txt = string.Join("\n", titles);
+                var names = new List<string>();
+                foreach(var title in titles) { 
+                    names.Add( title.Split('-')[0].Trim() + "\t" + nOpt.ToString() );
+                }
+                string txt = string.Join("\n", names);
                 richTextBox1.SelectedText = txt + "\n";
             }
         }
@@ -620,6 +651,10 @@ namespace register
 #else
             m_db = ConfigMng.FindTmpl("PTXX_NB.accdb");
 #endif
+            if (!File.Exists(m_db))
+            {
+                m_db = null;
+            }
             if (m_db != null)
             {
                 var cnnStr = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=<zDb>;";
@@ -763,7 +798,7 @@ namespace register
 
         private void openDbToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            OpenDbDlg();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -1008,9 +1043,6 @@ namespace register
 
         private void usersToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var userform = new FormUser();
-            userform.m_cp = m_cp;
-            userform.ShowDialog();
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -1018,5 +1050,100 @@ namespace register
             //refresh user
             m_users = getUsers();
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void editToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            var userform = new FormUser();
+            userform.m_cp = m_cp;
+            userform.Show();
+        }
+
+        private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            m_users = m_cp.GetAllUsers();
+        }
+
+        private void mettingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+//🌻 1. Báo cáo tình hình tham gia họp của từng thành viên 
+//Họ tên - tham gia/ko tham gia có báo/ko tham gia không báo
+//🌻 2. báo cáo trong mẫu biên bản họp đạo tràng về bc tháng 
+//Tổng số Phật tử tham gia: .../.... PT (số PT có mặt trên tổng số PT a, b, c tại đạo tràng) trong đó:
+//+ Ban cán sự Đạo tràng: ......../..........PT (số BCS tham gia họp/tổng số BCS đạo tràng)
+//+ Ban cán sự vắng mặt có lý do: ....../....PT (số BCS vắng mặt có lý do/tổng số BCS đạo tràng); danh sách chi tiết các thành viên BCS vắng mặt có lý do (họ tên, chức danh).
+//+ Ban cán sự vắng mặt không có lý do......./.....PT (số BCS vắng mặt không có lý do/tổng số BCS đạo tràng); danh sách chi tiết các thành viên BCS vắng mặt không lý do (họ tên, chức danh)
+//+ Phật tử chính thức: ......./..........PT (số PT chính thức tham gia họp/ tổng số PT chính thức)
+//+ Phật tử chính thức vắng mặt có lý do ............/..... PT
+//+ Phật tử chính thức vắng mặt không có lý do......../......PT
+            
+        }
+
+        private void updateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MongoClient dbClient = new MongoClient("mongodb+srv://taskapp:LgyFBzyFsOOtEZTt@cluster0.ibyhn.mongodb.net/admin?authSource=admin&replicaSet=atlas-rq5cr1-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true");
+            //var dbList = dbClient.ListDatabases().ToList();
+            //Console.WriteLine("The list of databases on this server is: ");
+            //foreach (var db in dbList)
+            //{
+            //    Console.WriteLine(db);
+            //}
+            var database = dbClient.GetDatabase("task-manager-api");
+
+            var dict = new Dictionary<string,string>();
+            var collection1 = database.GetCollection<BsonDocument>("daotrangs");
+            var documents1 = collection1.Find(new BsonDocument{ { "name", "ptxxnb" } }).ToList();
+            foreach(var doc in documents1)
+            {
+                var area = doc["areas"].ToString();
+                foreach(var pat in area.Split(';') ) {
+                    var arr = pat.Split(':');
+                    foreach(var acc in arr[1].Split(','))
+                    {
+                        dict.Add(acc,arr[0]);
+                    }
+                }
+            }
+
+            var collection = database.GetCollection<BsonDocument>("users");
+            var documents = collection.Find(new BsonDocument()).ToList();
+            foreach(var doc in documents)
+            {
+                try
+                {
+                    List<string> tags = new List<string>();
+                    //Console.WriteLine(documents[0].ToString());
+                    //age
+                    //name
+                    //email
+                    //groups
+                    string account = (String) doc["email"];
+                    if (dict.ContainsKey(account))
+                    {
+                        var user = new MyUser();
+                        user.zUser = (String) doc["name"];
+                        var groups = doc.GetValue("groups").AsBsonArray;
+                        foreach(var group in groups)
+                        {
+                            tags.Add(group.ToString());
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+
+            //
+            var userLst = m_cp.GetAllUsers();
+
+        }
+
     }
 }

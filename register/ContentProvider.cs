@@ -69,22 +69,21 @@ namespace register
         public DateTime birthDate;
         public string zPhapDanh;
         public bool bOut;
+        public string zPhone;
+        public string zAddr;
+        public string zLinkFb;
+        public string zEmail;
 
         public string zUserFb { get { return zUser + " - " + zFb; } }
 
         public MyUser copy()
         {
-            return new MyUser()
+            var newUser = new MyUser();
+            foreach(var fieldInfo in typeof(MyUser).GetFields())
             {
-                zUser = this.zUser,
-                zFb = this.zFb,
-                zZalo = this.zZalo,
-                ID = this.ID,
-                nGroup = this.nGroup,
-                birthDate = this.birthDate,
-                zPhapDanh = this.zPhapDanh,
-                bOut = this.bOut
-            };
+                fieldInfo.SetValue(newUser, fieldInfo.GetValue(this));
+            }
+            return newUser;
         }
     }
 
@@ -170,33 +169,72 @@ namespace register
 
         public void AddUser(MyUser user)
         {
-            var cmd = new OleDbCommand("INSERT INTO users (zUser, zFb, zZalo, nGroup,registedDate,birthDate) VALUES (@zUser, @zFb, @zZalo, @nGroup, @registedDate, @birthDate)", m_cnn);
+            var cmd = new OleDbCommand("INSERT INTO users (zUser, zFb ,registedDate) VALUES (@zUser, @zFb, @registedDate)", m_cnn);
             cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
             cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
-            cmd.Parameters.Add("@zZalo", OleDbType.VarChar).Value = user.zZalo;
-            cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
             cmd.Parameters.Add("@registedDate", OleDbType.Date).Value = DateTime.Now;
-            cmd.Parameters.Add("@birthDate", OleDbType.Date).Value = user.birthDate;
             var n = cmd.ExecuteNonQuery();
             if (n == 1)
             {
                 user.ID = Convert.ToUInt64(new OleDbCommand("Select @@Identity", m_cnn).ExecuteScalar().ToString());
             }
+            UpdateUser(user);
+        }
+
+        public MyUser GetUserById(UInt64 id)
+        {
+            MyUser user = null;
+            var cmd = new OleDbCommand("select * from users WHERE ID=@ID", m_cnn);
+            cmd.Parameters.Add("@ID",OleDbType.Numeric).Value = id;
+            var rd = cmd.ExecuteReader();
+            if(rd.Read())
+            {
+                user = new MyUser();
+                foreach(var fieldInfo in user.GetType().GetFields())
+                {
+                    if (rd[fieldInfo.Name].GetType() != typeof(DBNull))
+                    {
+                        fieldInfo.SetValue(user,Convert.ChangeType(rd[fieldInfo.Name],fieldInfo.FieldType));
+                    }
+                }
+            }
+            return user;
         }
         public int UpdateUser(MyUser user)
         {
-            var cmd = new OleDbCommand("UPDATE users SET zUser=@zUser, zFb=@zFb, zZalo=@zZalo, nGroup=@nGroup, bOut=@bOut WHERE ID=@ID", m_cnn);
-            cmd.Parameters.Add("@zUser", OleDbType.VarChar).Value = user.zUser;
-            cmd.Parameters.Add("@zFb", OleDbType.VarChar).Value = user.zFb;
-            cmd.Parameters.Add("@zZalo", OleDbType.VarChar).Value = user.zZalo;
-            cmd.Parameters.Add("@nGroup", OleDbType.Numeric).Value = user.nGroup;
-            cmd.Parameters.Add("@bOut", OleDbType.Boolean).Value = user.bOut;
-            cmd.Parameters.Add("@ID", OleDbType.Numeric).Value = user.ID;
-            var n = cmd.ExecuteNonQuery();
+            var n = 0;
+            var old = GetUserById(user.ID);
+            foreach(var fieldInfo in typeof(MyUser).GetFields())
+            {
+                if ((fieldInfo.GetValue(user) == null)
+                    && (fieldInfo.GetValue(old) == null))
+                {
+
+                }
+                else if ((fieldInfo.GetValue(old) == null)
+                    || (fieldInfo.GetValue(user).ToString() != fieldInfo.GetValue(old).ToString()))
+                {
+                    var cmd = new OleDbCommand(string.Format("UPDATE users SET {0}=@value WHERE ID=@ID", fieldInfo.Name), m_cnn);
+                    if (fieldInfo.FieldType == typeof(string))
+                    {
+                        cmd.Parameters.Add("@value", OleDbType.VarChar).Value = fieldInfo.GetValue(user);
+                    }
+                    else if(fieldInfo.FieldType == typeof(DateTime))
+                    {
+                        cmd.Parameters.Add("@value", OleDbType.Date).Value = fieldInfo.GetValue(user);
+                    }
+                    else
+                    {
+                        cmd.Parameters.Add("@value", OleDbType.Numeric).Value = fieldInfo.GetValue(user);
+                    }
+                    cmd.Parameters.Add("@ID", OleDbType.Numeric).Value = user.ID;
+                    n += cmd.ExecuteNonQuery();
+                }
+            }
             return n;
         }
 
-        public bool UpdateUserTag(MyUser u, List<string> tags)
+        public int UpdateUserTag(MyUser u, List<string> tags)
         {
             var tagIds = new List<UInt64>();
             var qry = "select ID from tags WHERE zTag = @zTag";
@@ -210,7 +248,7 @@ namespace register
             }
             return UpdateUserTag(u.ID, tagIds);
         }
-        public bool UpdateUserTag(UInt64 uId, List<UInt64>tagIds)
+        public int UpdateUserTag(UInt64 uId, List<UInt64>tagIds)
         {
             var cmd = new OleDbCommand("select * from user_tag where userID = @userID", m_cnn);
             cmd.Parameters.Add(new OleDbParameter("@userID", OleDbType.Numeric));
@@ -221,6 +259,7 @@ namespace register
 
             var cmdrm = new OleDbCommand("delete from user_tag where ID = @ID", m_cnn);
             cmdrm.Parameters.Add(new OleDbParameter("@ID", OleDbType.Numeric));
+            int nChg = 0;
             while (rd.Read())
             {
                 var tagId = Convert.ToUInt64(rd["tagID"]);
@@ -229,6 +268,7 @@ namespace register
                     rm.Add(tagId);
                     cmdrm.Parameters["@ID"].Value = Convert.ToUInt64(rd["ID"]);
                     var n = cmdrm.ExecuteNonQuery();
+                    nChg += n;
                 } else
                 {
                     added.Add(tagId);
@@ -245,8 +285,9 @@ namespace register
                 cmd2.Parameters.Add(new OleDbParameter("@tagID", OleDbType.Numeric));
                 cmd2.Parameters["@tagID"].Value = tagId;
                 var n = cmd2.ExecuteNonQuery();
+                nChg += n;
             }
-            return true;
+            return nChg;
         }
         public MyUser GetUser(UInt64 uID)
         {
@@ -784,10 +825,15 @@ namespace register
 
         public List<string> GetAllTags()
         {
-            return new List<string>()
+            var cmd = new OleDbCommand("select * from tags", m_cnn);
+            var rd = cmd.ExecuteReader();
+            var tags = new List<string>();
+            while(rd.Read())
             {
-                "BCS", "Dự Thính", "Chính Thức"
+                tags.Add(rd["zTag"].ToString());
             };
+            return tags;
+            //"BCS" 12, "Dự Thính"13, "Chính Thức" 14
         }
 
         public List<UInt64> GetIds(string table)
@@ -898,6 +944,7 @@ namespace register
             m_crtQry = "CREATE TABLE if not exists  users("
             + "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
             + "zUser char(31),"
+            + "zEmail char(31),"
             + "zFb char(31),"
             + "birthDate datetime,"
             + "nGroup INTEGER,"
@@ -913,12 +960,16 @@ namespace register
             m_cols = new lColInfo[] {
                    new lColInfo( "ID","ID", lColInfo.lColType.num),
                    new lColInfo( "zUser","Họ tên", lColInfo.lColType.text),
+                   new lColInfo( "zEmail","Email", lColInfo.lColType.text),
                    new lColInfo( "zFb","Facebook", lColInfo.lColType.text),
                    new lColInfo( "birthDate","Ngày sinh", lColInfo.lColType.dateTime),
                    new lColInfo( "nGroup","Nhóm", lColInfo.lColType.num),
                    new lColInfo( "zZalo","Zalo", lColInfo.lColType.text),
                    new lColInfo( "zPhapDanh","Pháp danh", lColInfo.lColType.text),
                    new lColInfo( "bOut","Xin ra", lColInfo.lColType.chk),
+                   new lColInfo( "zPhone","Sdt", lColInfo.lColType.text),
+                   new lColInfo( "zAddr","Dia chi", lColInfo.lColType.text),
+                   new lColInfo( "zLinkFb","Link Fb", lColInfo.lColType.text),
                 };
         }
     }

@@ -707,12 +707,16 @@ namespace register
             m_inputsCtrls = new List<lInputCtrl> {
                 crtInputCtrl(m_tblInfo, "ID"        , new Point(0, 0), new Size(2, 1)),
                 crtInputCtrl(m_tblInfo, "zUser"     , new Point(0, 1), new Size(2, 1)),
-                crtInputCtrl(m_tblInfo, "zFb"       , new Point(0, 2), new Size(2, 1)),
-                crtInputCtrl(m_tblInfo, "zZalo"     , new Point(0, 3), new Size(2, 1)),
-                crtInputCtrl(m_tblInfo, "birthDate" , new Point(0, 4), new Size(2, 1)),
-                crtInputCtrl(m_tblInfo, "nGroup"    , new Point(0, 5), new Size(2, 1)),
-                crtInputCtrl(m_tblInfo, "zPhapDanh" , new Point(0, 6), new Size(2, 1)),
-                crtInputCtrl(m_tblInfo, "bOut" , new Point(0, 6), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "zEmail"    , new Point(0, 2), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "zFb"       , new Point(0, 3), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "zZalo"     , new Point(0, 4), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "birthDate" , new Point(0, 5), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "nGroup"    , new Point(0, 6), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "zPhapDanh" , new Point(0, 7), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "bOut"      , new Point(0, 8), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "zPhone"    , new Point(0, 9), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "zAddr"     , new Point(0, 10), new Size(2, 1)),
+                crtInputCtrl(m_tblInfo, "zLinkFb"   , new Point(0, 11), new Size(2, 1)),
             };
             m_inputsCtrls[0].ReadOnly = true;
         }

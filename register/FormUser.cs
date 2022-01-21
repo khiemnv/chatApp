@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -60,15 +61,23 @@ namespace register
 
             lbl = ConfigMng.CrtLabel(); lbl.Text = "Tags";
             tags = ConfigMng.CrtCheckedListBox();
+            tags = ConfigMng.CrtCheckedListBox();
+            tags.MultiColumn =  true;
+            tags.Dock = DockStyle.Fill;
+            tags.Height = 200;
+
             tlp.Controls.Add(lbl, iCol, ++iRow);
+            //tlp.RowStyles.Add(new RowStyle(SizeType.Percent,100));
             tlp.Controls.Add(tags, iCol + 1, iRow);
 
-            var btn = ConfigMng.CrtButton(); btn.Text = "Add/Update";
+            var btn = ConfigMng.CrtButton();
+            btn.Text = "Add/Update";
             btn.AutoSize = true;
             btn.Click += AddUpdateUser;
             tlp.Controls.Add(btn, iCol, ++iRow);
 
             sc.Panel2.Controls.Add (tlp);
+            //sc.Panel2.Controls.Add (btn);
             this.Controls.Add( sc);
 
             //left panel
@@ -96,6 +105,28 @@ namespace register
             this.ContextMenuStrip = mc;
             var newUser = mc.Items.Add("clear");
             newUser.Click += NewUser_Click;
+
+            this.FormClosed += FormUser_Resize;
+
+            //restore size
+            {
+                var location = ConfigMng.CfgRead("UserWndLocation") as string;
+                var wndSize = ConfigMng.CfgRead("UserWndSize") as string;
+                if (location != null)
+                {
+                    this.Location = JsonConvert.DeserializeObject<Point>(location);
+                    this.Size = JsonConvert.DeserializeObject<Size>(wndSize);
+                }
+            }
+        }
+
+        private void FormUser_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Normal)
+            {
+                ConfigMng.CfgWrite("UserWndLocation", JsonConvert.SerializeObject(this.Location));
+                ConfigMng.CfgWrite("UserWndSize", JsonConvert.SerializeObject(this.Size));
+            }
         }
 
         private void NewUser_Click(object sender, EventArgs e)
@@ -131,8 +162,15 @@ namespace register
             }
         }
 
+        ToolTip mNotify = new ToolTip();
         private void AddUpdateUser(object sender, EventArgs e)
-        {
+        {            
+            List<string> tagLst = new List<string>();
+            string tooltipText = "";
+            foreach( var i in tags.CheckedItems)
+            {
+                tagLst.Add(i.ToString());
+            }
             var obj = m_inputPanel.GetObject<MyUser>();
             if (obj.ID == 0)
             {
@@ -141,26 +179,34 @@ namespace register
                 var n = tv.Nodes.Add(m_user.zUserFb);
                 n.Tag = m_user;
                 n.EnsureVisible();
+                tooltipText = "added new";
+                m_cp.UpdateUserTag(m_user, tagLst);
+                m_useCmb.OnUpdateUsers();
             }
             else
             {
                 var user = obj;
-                m_cp.UpdateUser(user);
+                var ret = m_cp.UpdateUser(user);
 
                 var n = tv.Nodes.Find(user.ID.ToString(),true);
                 n[0].Text = user.zUserFb;
                 n[0].Tag = user;
                 m_user = user;
                 n[0].EnsureVisible();
+                
+                var nchg = m_cp.UpdateUserTag(m_user, tagLst);
+                ret += nchg;
+                if (ret > 0)
+                { 
+                    tooltipText = "updated";
+                    m_useCmb.OnUpdateUsers();
+                }
+                else
+                {
+                    tooltipText = "no change";
+                }
             }
-            List<string> tagLst = new List<string>();
-            foreach( var i in tags.CheckedItems)
-            {
-                tagLst.Add(i.ToString());
-            }
-            m_cp.UpdateUserTag(m_user, tagLst);
-
-            m_useCmb.m_users = m_cp.GetAllUsers();
+            mNotify.Show(tooltipText,(IWin32Window)sender,1000);
         }
         #endregion
         private void LoadData(object sender, EventArgs e)

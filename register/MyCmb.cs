@@ -30,7 +30,7 @@ namespace register
             return m_users.Find((u) => {return u.zUserFb == txt; });
         }
 
-        private void OnUpdateUsers()
+        public void OnUpdateUsers()
         {
             m_idx = null;
         }
